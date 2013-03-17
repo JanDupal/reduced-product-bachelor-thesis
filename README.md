@@ -1,0 +1,2 @@
+reduced-product-bachelor-thesis
+===============================
