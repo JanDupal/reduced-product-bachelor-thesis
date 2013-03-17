@@ -1,0 +1,150 @@
+\documentclass[12pt,oneside,draft]{fithesis2}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+\thesistitle{Reduced product of abstract domains}
+\thesissubtitle{Bachelor thesis}
+\thesisstudent{Jan Dupal}
+\thesisfaculty{fi}
+\thesisyear{spring 2013}
+\thesisadvisor{Mgr. Karel Klíč}
+\thesislang{en}
+
+\begin{document}
+\FrontMatter
+\ThesisTitlePage
+
+\begin{ThesisDeclaration}
+\DeclarationText
+\AdvisorName
+\end{ThesisDeclaration}
+
+\begin{ThesisThanks}
+I would like to thank my supervisor...
+\end{ThesisThanks}
+
+\begin{ThesisAbstract}
+Canal is a static analysis tool designed to analyze behaviour of application programs written in C. It is based on the theoretical framework of abstract interpretation, with focus on the scalability to large programs and proper handling of real-world source code.
+
+Reduced product of abstract domains is a mechanism enabling an incremental evolution of abstract interpreter by introducing simple abstract domains one by one, and supporting program-specific domains. The reduced product itself is an abstract domain, and its operations (transformers) use the transformers of underlying domains component-wise. Underlying domains can improve their precision by exchanging information.
+
+The goal of this thesis is to design and develop a generic reduced product in the context of Canal. The reduced product must provide means to exchange information between the underlying domains while keeping the domains themselves independent from each other. The impact of reduced product of integer intervals, bit field and set abstract domains on the analysis of numeric programs should be measured.
+\end{ThesisAbstract}
+
+\begin{ThesisKeyWords}
+static analysis, abstract interpretation, reduced product, canal
+\end{ThesisKeyWords}
+
+\tableofcontents
+
+\MainMatter
+\chapter{Introduction}
+\begin{itemize}
+  \item program analysis (why?)
+  \item static/dynamic
+\end{itemize}
+
+\section{Static program analysis}
+\begin{itemize}
+  \item utilization (runtime errors etc.)
+  \item cons and pros
+\end{itemize}
+
+\section{Abstract interpretation}
+\begin{itemize}
+  \item basic principles
+  \item concrete value - abstract value
+\end{itemize}
+
+\section{Reduced product}
+\begin{itemize}
+  \item References to chapters (theory)
+\end{itemize}
+
+\section{Project \textsc{Canal}}
+\begin{itemize}
+  \item Project goals
+  \item References to chapters (implementation)
+\end{itemize}
+
+
+\chapter{Abstract interpretation}
+\begin{itemize}
+  \item ASTRÉE, Cusot
+\end{itemize}
+
+\section{Abstract values}
+\section{Galois connection}
+\section{Lattices of abstract values}
+\section{Abstract operations}
+
+
+\chapter{Reduced product}
+\begin{itemize}
+  \item Accuracy refinement
+  \item Specialized domains
+\end{itemize}
+
+\section{Domain product}
+\begin{itemize}
+  \item Definition
+  \item Multiple representations of concrete value
+\end{itemize}
+
+\section{Communication}
+\begin{itemize}
+  \item Types of communication (direct, broadcast)
+  \item Extract
+  \item Refine
+\end{itemize}
+
+\section{Structure}
+\begin{itemize}
+  \item Plain and Tree
+  \item Traversing algorithms
+  \item Expected impact on accuracy and performance
+  \item Correctness, convergence, complexity
+\end{itemize}
+
+
+\chapter{Implementation in \textsc{Canal}}
+\begin{itemize}
+  \item Overview of implementation
+\end{itemize}
+
+\section{Containers}
+\begin{itemize}
+  \item Vector, Tree
+  \item Cons and pros
+\end{itemize}
+
+\section{Messages}
+\begin{itemize}
+  \item Kind of messages
+  \item Meet
+\end{itemize}
+
+\section{Extract and Refine operations}
+
+\section{Example: Integer domain}
+\begin{itemize}
+  \item Walkthrough of Integer domain RP implementation
+\end{itemize}
+
+
+\chapter{Measurements}
+\begin{itemize}
+  \item Accuracy
+  \item Performance
+\end{itemize}
+\section{Artificial programs analysis}
+\section{\textsc{GNU Core Utilities} analysis}
+
+
+\chapter{Conclusion}
+\section{Impact on program analysis}
+\section{Future work}
+
+\bibliographystyle{plain}
+
+\end{document}
