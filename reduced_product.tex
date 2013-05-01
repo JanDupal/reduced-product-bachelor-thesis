@@ -2,6 +2,22 @@
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
 
+% Better font rendering?
+\usepackage{amsfonts}
+\usepackage{amsthm}
+
+% Pseudo-code
+\usepackage[chapter]{algorithm}
+\usepackage{algpseudocode}
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+
+% URL formatting
+\usepackage{url}
+
+% ToC setup
+\setcounter{tocdepth}{3}
+
 \thesistitle{Reduced product of abstract domains}
 \thesissubtitle{Bachelor thesis}
 \thesisstudent{Jan Dupal}
@@ -24,7 +40,7 @@ I would like to thank my supervisor...
 \end{ThesisThanks}
 
 \begin{ThesisAbstract}
-Canal is a static analysis tool designed to analyze behaviour of application programs written in C. It is based on the theoretical framework of abstract interpretation, with focus on the scalability to large programs and proper handling of real-world source code.
+Canal is a static analysis tool designed to analyse behaviour of application programs written in C. It is based on the theoretical framework of abstract interpretation, with focus on the scalability to large programs and proper handling of real-world source code.
 
 Reduced product of abstract domains is a mechanism enabling an incremental evolution of abstract interpreter by introducing simple abstract domains one by one, and supporting program-specific domains. The reduced product itself is an abstract domain, and its operations (transformers) use the transformers of underlying domains component-wise. Underlying domains can improve their precision by exchanging information.
 
@@ -43,6 +59,22 @@ static analysis, abstract interpretation, reduced product, canal
   \item program analysis (why?)
   \item static/dynamic
 \end{itemize}
+
+Program analysis is a field of Computer Science, which examines behaviour of programs.
+
+\paragraph{Properties of programs}
+The behaviour can be described by two distinct properties: \textit{correctness} and \textit{finiteness}.
+
+Intuitively correctness expresses whether the program gives the same results as was intended. Formally...
+
+Finiteness gives guarantee that program will finish it's computation in finite number of steps [citation needed].
+
+\paragraph{Program analysis approaches}
+In terms of approach program analysis is divided into two categories: dynamic and static analysis.
+
+As the name suggests \textit{dynamic analysis} is performed on run-time. On the other hand \textit{static analysis} performed without actually executing the program. Obviously both approaches have advantages and disadvantages.
+
+The dynamic analysis is capable of giving very precise results on given program input, where static analysis is input-independent, but it's results are more general, therefore less accurate \cite{CousotEtAl06-ASIAN}.
 
 \section{Static program analysis}
 \begin{itemize}
@@ -68,37 +100,143 @@ static analysis, abstract interpretation, reduced product, canal
 \end{itemize}
 
 
-\chapter{Abstract interpretation}
+\chapter{Abstract interpretation}\label{ch:abstract-interpretation}
+% \begin{itemize}
+%   \item Term formalization
+%   \item Theoretical frameworks
+%   \item False alarms
+%   \item Least fixed point
+%   \item See Astre
+% \end{itemize}
+
+The term \textit{abstract interpretation} as described in \cite{CousotCousot77-1}:
+
+\begin{quotation}
+``A program denotes computations in some universe of objects. Abstract interpretation of programs consists in using this denotation to describe computation in another universe of abstract objects, so that the results of abstract interpretation give some information on the actual computation.''
+\end{quotation}
+
+In other words, the goal of \textit{abstract interpretation} is to provide information about program computation. The tool it uses to reach the goal is abstraction of values and operations.
+
+\paragraph{Abstract values}
+Abstracting concrete values (e.g. integers) as their property (e.g. parity) allows to represent multiple values having the property as a single abstract value.
+
+\paragraph{Abstract operation}
+To be able to apply operations on abstract values, it is necessary to define abstract operations. Abstract values are used to transform input abstract values to output abstract values. And to be semantically correct, abstract operation must preserve the same behaviour as its concrete model regarding the property used to abstract values.
+
+\vspace{1\baselineskip} % TODO
+
+Given a program and definitions of abstract values and operations, \textit{abstract interpretation} is able to interpret the program using abstract values instead of concrete values. The result of interpretation is information about properties of program values in each of program steps.
+
+
+\section{Domain of abstract values}
+% \begin{itemize}
+%   \item What do abstract values represent?
+%   \item Example - $+$, $-$, $\pm$, $|x|$, output
+%   \item Abstract domains
+%   \item False alarms
+% \end{itemize}
+
+As it has been said in the introduction, \textit{abstract values} serve to express a specific set of properties of concrete values.
+
+Domain of abstract values (or \textit{abstract domain}) not only represents set of all possible abstract values, but also defines algebraic relations between values from the same domain, as described in section \ref{subsec:lattices}.
+
+\subsection{Example}\label{sec:example}
+
+To give a brief example of abstract values consider the following computation from \cite{CousotCousot77-1}:
+
+\[ -1515 \cdot 17 \]
+
+To describe this computation in some abstract universe, first we need to define the domain of abstract values: symbols $(+)$ and $(-)$ to represent sign of concrete integral value and symbol $(\pm)$ for unknown sign, formally as a set $\{(+), (-), (\pm)\}$.
+
+Using this abstract values the previous computation corresponds to the following abstract computation:
+
+\[ -(+) \cdot (+) \Rightarrow (-) \cdot (+) \Rightarrow (-) \]
+
+Obviously the result of the first (concrete) computation expressed as abstract value is $(-)$, which is exactly the result of the second (abstract) computation.
+
+\paragraph{Influence of operation}
+However using addition instead of multiplication ($-1515 + 17$) leads to inaccurate result of abstract computation:
+
+\[ -(+) + (+) \Rightarrow (-) + (+) \Rightarrow (\pm) \]
+
+As you can see, the sign of the sum of negative and positive integer might be both $+$ or $-$, depending on which component is larger in absolute value. This unknown result is in our abstract universe expressed as $(\pm)$, generally denoted as $\top$.
+
+\paragraph{Influence of domain}
+Also the choice of domain of abstract values affects accuracy of abstract computation. Choosing the domain of abstract values as $\{(even), (odd), \top\}$ to represent parity of integers instead of sign leads to the following results:
+
+\[ -(odd) \cdot (odd) \Rightarrow (odd) \cdot (odd) \Rightarrow (odd) \]
+\[ -(odd) + (odd) \Rightarrow (odd) + (odd) \Rightarrow (even) \]
+
+The lack of $\top$ values in the results means that there was no accuracy lost when executing abstract computation.
+
+\subsection{Lattices of abstract values}\label{subsec:lattices}
 \begin{itemize}
-  \item ASTRÉE, Cusot
+  \item Why lattices
+  \item Define
+  \item Ordering
+  \item Properties
+  \item Example as in previous chapter
 \end{itemize}
 
-\section{Abstract values}
-\section{Galois connection}
-\section{Lattices of abstract values}
 \section{Abstract operations}
+\begin{itemize}
+  \item Connection between concrete values and operations
+  \item Galois connection
+  \item Example
+\end{itemize}
 
+\section{Least fixed point}\label{sec:fixed-point}
+
+\cite{CousotCousot79-1}
 
 \chapter{Reduced product}
-\begin{itemize}
-  \item Accuracy refinement
-  \item Specialized domains
-\end{itemize}
+% \begin{itemize}
+%   \item Accuracy refinement
+%   \item Specialized domains
+% \end{itemize}
 
-\section{Domain product}
-\begin{itemize}
-  \item Definition
-  \item Multiple representations of concrete value
-\end{itemize}
+As demonstrated in Example in section \ref{sec:example}, a single abstract domain may not be able to accurately cover all possible abstract operations. Therefore it is convenient to incorporate \textit{multiple specialized abstract domains}. Each of these domains may capture a specific property of concrete value while ignoring other [citation].
 
-\section{Communication}
+When designing a new abstract domain, this approach allows us to focus on the core functionality of the domain and does not burden us with necessity of implementing all possible abstract operations in accurate manner, which may not be possible or feasible. But it ultimately leads to the need for inter-domain communication that enables information exchange in order to refine accuracy.
+
+From high-level view the goal of the communication framework is to encapsulate and refine abstract domains representing a single program variable, hence it can be viewed as a \textit{reduced product of abstract domains}.
+
+Reduced product of abstract domains consist of the following components:
+
+\begin{description}
+  \item[Domain product] encapsulates multiple abstract values
+  \item[Communication protocol] enables inter-domain communication
+  \item[Internal structure] defines process of refinement
+\end{description}
+
+\section{Domain product}\label{sec:domain-product}
+% \begin{itemize}
+%   \item Definition
+%   \item Multiple representations of concrete value
+% \end{itemize}
+
+Motivation to introduce \textit{domain product} to abstract interpretation has been outlined in the beginning of this chapter - using a single abstract value to represent a program value would lead either to inaccurate results or complex implementation. Also it would not allow to deploy a new abstract domain tailored for specific problem. \cite{CousotEtAl06-ASIAN}
+
+The solution is to encapsulate abstract values representing the same concrete value into a new abstract value.
+
+\section{Communication protocol}
 \begin{itemize}
   \item Types of communication (direct, broadcast)
-  \item Extract
-  \item Refine
+  \item Description of message
+  \item Properties of message (lattice)
+  % \item Extract
+  % \item Refine
 \end{itemize}
 
-\section{Structure}
+\subsection{Extract operation}
+
+Extract operation applied on a given abstract value results into message containing refinement information.
+
+\subsection{Refine operation}
+
+Refine operation attempts to improve accuracy of abstract value using refinement information from refinement message.
+
+\section{Internal structure}
 \begin{itemize}
   \item Plain and Tree
   \item Traversing algorithms
@@ -108,25 +246,63 @@ static analysis, abstract interpretation, reduced product, canal
 
 
 \chapter{Implementation in \textsc{Canal}}
-\begin{itemize}
-  \item Overview of implementation
-\end{itemize}
+% \begin{itemize}
+%   \item Overview of Canal
+%   \item Overview of RP implementation
+% \end{itemize}
 
-\section{Containers}
+This chapter addresses \textsc{Canal} project and its implementation of \textit{reduced product}.
+
+\section{Introduction to \textsc{Canal} project}
+
+\textsc{Canal} is a static analysis tool designed to analyze behaviour of
+application programs written in C [language]. It is based on the theoretical
+framework of abstract interpretation, with focus on the scalability to
+large programs and proper handling of real-world source code. \cite{Canal}
+
+It consists of three main components:
+
+\begin{description}
+  \item[Abstract domains] set of predefined abstract domains to cover machine integers, floating point numbers, arrays and structures
+  \item[Interpreter] component responsible for source code traversal and program state management
+  \item[Operations] translation from program instructions to operations on abstract values
+\end{description}
+
+Components \textit{abstract domains} and \textit{operations} correspond to entities described in chapter \ref{ch:abstract-interpretation}. \textit{Interpreter} involves concept of \textit{least fixed point} (section \ref{sec:fixed-point}) and it is interesting from technical point of view, because it incorporates LLVM libraries for interaction with source code.
+
+LLVM is a a compiler framework, which provides a combination of key capabilities that are important for practical, lifelong analysis and
+transformation of programs. \cite{llvm} It isolates \textsc{Canal} from machine-level semantics of C language and allows to offload processes associated with compiling and instruction-level analysis, therefore development of \textsc{Canal} can fully focus on abstract interpretation.
+
+Provided the previous components, \textsc{Canal} is able to statically analyze general programs written in C. The high-level work flow can be described in the following way:
+
+\begin{enumerate}
+  \item Compilation of program source utilising LLVM compiler
+  \item Load of resulting LLVM bytecode
+  \item Initialization of program state using abstract values
+  \item Translation of program instructions to abstract operations
+  \item Execution of abstract operations on abstract values
+\end{enumerate}
+
+\section{Framework of reduced product in \textsc{Canal}}
+
+\subsection{Containers}
 \begin{itemize}
   \item Vector, Tree
   \item Cons and pros
 \end{itemize}
 
-\section{Messages}
+\subsection{Messages}
 \begin{itemize}
   \item Kind of messages
   \item Meet
 \end{itemize}
 
-\section{Extract and Refine operations}
+\subsection{Extract and Refine operations}
+\begin{itemize}
+  \item Design of extract/refine operations
+\end{itemize}
 
-\section{Example: Integer domain}
+\section{Integer reduced product}
 \begin{itemize}
   \item Walkthrough of Integer domain RP implementation
 \end{itemize}
@@ -144,7 +320,12 @@ static analysis, abstract interpretation, reduced product, canal
 \chapter{Conclusion}
 \section{Impact on program analysis}
 \section{Future work}
+\begin{itemize}
+  \item Pre-condition refinements
+  \item Task-parallelism, topological order
+\end{itemize}
 
 \bibliographystyle{plain}
+\bibliography{reduced_product}
 
 \end{document}
