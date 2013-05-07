@@ -1,10 +1,17 @@
-\documentclass[12pt,oneside,draft]{fithesis2}
+\documentclass[12pt,oneside]{fithesis2}
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
 
 % Better font rendering?
 \usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsmath}
 \usepackage{amsthm}
+
+% Examples
+\theoremstyle{definition}
+\newtheorem{exmp}{Example}[section]
+\newtheorem{definition}{Definition}[section]
 
 % Pseudo-code
 \usepackage[chapter]{algorithm}
@@ -17,6 +24,9 @@
 
 % Diagrams
 \usepackage{tikz}
+
+% Interactive references
+ \usepackage{hyperref}
 
 % ToC setup
 \setcounter{tocdepth}{3}
@@ -91,6 +101,16 @@ The dynamic analysis is capable of giving very precise results on given program 
   \item concrete value - abstract value
 \end{itemize}
 
+When manually analysing behaviour of a given program by going through its source code, we often try to enumerate all possible values of a particular program variable. The knowledge of all possible values of the variable allow us to precisely reason about the results of expression incorporating that variable.
+
+To correctly infer results of an expression, depending on cardinality of the expression, we take all possible combinations of input values and apply the expression. The result of our derivation is again a set of all possible values.
+
+However, sometimes (e.g. in case of loops) the set of all possible values might be too large to memorize, so we have to resort to represent the set in another way. One option is to approximate the set as a certain property which is shared among all elements of the set. For example, a set of integers $\{1, 5, 9, 13, 17\}$ can be represented as \textit{odd integers}.
+
+Approach to expressions evaluation is preserved -- first we \textit{concretize} the property representing the set of possible values, then we apply all possible combination of input values, resulting into a set of all possible results, which we \textit{abstract} to a property of the set.
+
+Unconsciously we were using the concepts of \textit{abstract interpretation}.
+
 \section{Reduced product}
 \begin{itemize}
   \item References to chapters (theory)
@@ -116,7 +136,7 @@ In some cases, a concrete question may not be answered easily. In that cases, we
 
 Using this abstract answer we might be able to answer the original question or at least approximate the concrete answer - in that case, the abstract answer has to be sound, but not necessarily complete. \cite{CousotCousot04-WCC}
 
-\subsection{Abstract interpretation in static analysis}
+\section{Usage in static analysis}
 
 Analogous approach has shown as successful in static program analysis, where the concrete question is whether a given program is correct, i.e. the proof of the absence of run-time errors, which is proven to be undecidable \cite{mine-AIAA10}. This problem may be solved using abstraction to soundly approximate the answer. Therefore it is necessary to formalize those abstraction, which is the goal of \textit{abstract interpretation}.
 
@@ -176,29 +196,122 @@ The lack of $\top$ values in the results means that there was no accuracy lost w
 %   \item False alarms
 % \end{itemize}
 
-As it has been said in the introduction, \textit{abstract values} serve to express a specific set of properties of concrete values.
+In abstract interpretation, an abstract value denotes a set of concrete values, which is defined either explicitly or represents a set of values of certain property \cite{CousotCousot76-1}.
 
-Domain of abstract values (or \textit{abstract domain}) not only represents set of all possible abstract values, but also defines algebraic relations between values from the same domain, as described in section \ref{subsec:lattices}.
+By convention, a domain of concrete values will further be denoted as $D$ and a domain of abstract values as $D^\#$.
 
-\subsection{Lattices of abstract values}\label{subsec:lattices}
-\begin{itemize}
-  \item Why lattices
-  \item Define
-  \item Ordering
-  \item Properties
-  \item Example as in previous chapter
-\end{itemize}
+\subsection{Abstraction}
+
+The correspondence between a sets of concrete values and an abstract value is established by the \textit{abstraction function}: \cite{CousotCousot76-1}
+
+\[
+\alpha_{D^\#}\colon D \to D^\#
+\]
+
+\begin{exmp}[Abstraction, Integer Interval Domain\cite{mine-WING12}]
+  \begin{gather*}
+    D = \mathcal P(\mathbb Z)\\
+    D^\# = \{[l,h] | l,h \in \mathbb{Z} \cup \{\pm\infty\}\}\\
+    \alpha_{D^\#}(C) \triangleq [min(C), max(C)]\\
+    \alpha_{D^\#}(\{-4, 9, 11\}) = [-4, 11]\\
+    \alpha_{D^\#}(\mathbb Z) = [-\infty, \infty]
+  \end{gather*}
+\end{exmp}
+
+\subsection{Concretization}
+Inversely to abstraction function, \textit{concretization function} is defined: \cite{CousotCousot76-1}
+
+\[
+\gamma_{D^\#}\colon D^\# \to D
+\]
+
+\begin{exmp}[Concretization, Integer Interval Domain\cite{mine-WING12}]
+  \begin{gather*}
+    D = \mathcal P(\mathbb Z)\\
+    D^\# = \{[l,h] | l,h \in \mathbb{Z} \cup \{\pm\infty\}\}\\
+    \gamma_{D^\#}([l,h]) \triangleq \{x \in \mathbb Z | l \le x \le h\}\\
+    \gamma_{D^\#}([-1,2]) = \{-1, 0, 1, 2\}\\
+    \gamma_{D^\#}([-\infty, \infty]) = \mathbb Z
+  \end{gather*}
+\end{exmp}
+
+\subsection{Partial order of abstract and concrete values}
+
+We require $(D, \subseteq)$ to be a poset, where $\subseteq$ subset relation. And dually, $(D^\#, \sqsubseteq)$ to be also a poset, where $\sqsubseteq$ denotes \textit{information pre-order} [citation needed].
+
+\subsection{Soundness and completeness of approximation}
+
+\paragraph{Soundness}
+In order to be sound approximation, abstraction and concretization functions has to satisfy the following requirement: \cite{mine-AIAA10}
+
+\[
+  \forall C \in D: C \subseteq \gamma_{D^\#}(\alpha_{D^\#}(C))
+\]
+
+Respectively:
+
+\[
+  \forall A \in D^\#: A \sqsubseteq \alpha_{D^\#}(\gamma_{D^\#}(A))
+\]
+
+Intuitively soundness means, that no concrete value is omitted by abstraction. In context of program analysis, soundness expresses \textit{the lack of false negatives}, which is often required property.
+
+\paragraph{Completeness}
+In opposite to soundness, \textit{completeness} is not required by abstract interpretation. But its presence is very valuable. It is defined as: \cite{mine-AIAA10}
+
+\[
+  \forall C \in D: C \supseteq \gamma_{D^\#}(\alpha_{D^\#}(C))
+\]
+
+Respectively:
+
+\[
+  \forall A \in D^\#: A \sqsupseteq \alpha_{D^\#}(\gamma_{D^\#}(A))
+\]
+
+Completeness corresponds in terms of static analysis to \textit{the absence of false positives}.
+
+\subsection{Lattices of abstract values}
+
+\begin{figure}[ht!]
+  \centering
+  \begin {tikzpicture}[node distance=1.5cm]
+    \node (Top) { $\top$ };
+    \node (Positive) [below left of=Top] { $(+)$ };
+    \node (Negative) [below right of=Top] { $(-)$ };
+    \node (Zero) [below right of=Positive] { $0$ };
+    \node (Bottom) [below of=Zero] { $\bot$ };
+    \draw (Top) -- (Positive);
+    \draw (Top) -- (Negative);
+    \draw (Positive) -- (Zero);
+    \draw (Negative) -- (Zero);
+    \draw (Zero) -- (Bottom);
+  \end {tikzpicture}
+  \caption{Sign lattice}
+\end{figure}
+
+\begin{figure}[ht!]
+  \centering
+  \begin {tikzpicture}[node distance=1.5cm]
+    \node (Top) { $\top$ };
+    \node (Even) [below left of=Top] { $ev$ };
+    \node (Odd) [below right of=Top] { $od$ };
+    \node (Bottom) [below right of=Even] { $\bot$ };
+    \draw (Top) -- (Even);
+    \draw (Top) -- (Odd);
+    \draw (Even) -- (Bottom);
+    \draw (Odd) -- (Bottom);
+  \end {tikzpicture}
+  \caption{Parity lattice}
+\end{figure}
 
 \section{Abstract operations}
-\begin{itemize}
-  \item Connection between concrete values and operations
-  \item Galois connection
-  \item Example
-\end{itemize}
 
-\section{Least fixed point}\label{sec:fixed-point}
+For any concrete $n$-ary primitive $F: D^n \to D$, we require sound abstraction: \cite{CousotEtAl06-ASIAN}
 
-\cite{CousotCousot79-1}
+\[
+\forall a_i \in D^\#: F((\gamma_{D^\#}(a_i))_{1 \le i \le n}) \subseteq \gamma_{D^\#}(F((a_i)_{1 \le i \le n}))
+\]
 
 \chapter{Reduced product}
 % \begin{itemize}
@@ -225,21 +338,6 @@ Reduced product of abstract domains consist of the following components:
 %   \item Definition
 %   \item Multiple representations of concrete value
 % \end{itemize}
-
-\begin{figure}[ht!]
-  \centering
-  \begin {tikzpicture}[node distance=2cm]
-    \node (Top) { $\top$ };
-    \node (Zero) [below left of=Top] { $0$ };
-    \node (One) [below right of=Top] { $1$ };
-    \node (Bottom) [below right of=Zero] { $\bot$ };
-    \draw (Top) -- (Zero);
-    \draw (Top) -- (One);
-    \draw (Zero) -- (Bottom);
-    \draw (One) -- (Bottom);
-  \end {tikzpicture}
-  \caption{WTF}
-\end{figure}
 
 Motivation to introduce \textit{domain product} to abstract interpretation has been outlined in the beginning of this chapter - using a single abstract value to represent a program value would lead either to inaccurate results or complex implementation. Also it would not allow to deploy a new abstract domain tailored for a specific problem. \cite{CousotEtAl06-ASIAN}
 
