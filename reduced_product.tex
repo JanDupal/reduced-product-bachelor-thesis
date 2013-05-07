@@ -15,6 +15,9 @@
 % URL formatting
 \usepackage{url}
 
+% Diagrams
+\usepackage{tikz}
+
 % ToC setup
 \setcounter{tocdepth}{3}
 
@@ -109,40 +112,36 @@ The dynamic analysis is capable of giving very precise results on given program 
 %   \item See Astre
 % \end{itemize}
 
-The term \textit{abstract interpretation} as described in \cite{CousotCousot77-1}:
+In some cases, a concrete question may not be answered easily. In that cases, we may resort to ask a simpler abstract question that results in an abstract answer.
+
+Using this abstract answer we might be able to answer the original question or at least approximate the concrete answer - in that case, the abstract answer has to be sound, but not necessarily complete. \cite{CousotCousot04-WCC}
+
+\subsection{Abstract interpretation in static analysis}
+
+Analogous approach has shown as successful in static program analysis, where the concrete question is whether a given program is correct, i.e. the proof of the absence of run-time errors, which is proven to be undecidable \cite{mine-AIAA10}. This problem may be solved using abstraction to soundly approximate the answer. Therefore it is necessary to formalize those abstraction, which is the goal of \textit{abstract interpretation}.
+
+The term abstract interpretation as described in \cite{CousotCousot77-1}:
 
 \begin{quotation}
 ``A program denotes computations in some universe of objects. Abstract interpretation of programs consists in using this denotation to describe computation in another universe of abstract objects, so that the results of abstract interpretation give some information on the actual computation.''
 \end{quotation}
 
-In other words, the goal of \textit{abstract interpretation} is to provide information about program computation. The tool it uses to reach the goal is abstraction of values and operations.
+In other words, the goal of program analysis using abstract interpretation is to provide information about program computation. The tool it uses to reach the goal is \textit{abstraction of values and operations}.
 
 \paragraph{Abstract values}
-Abstracting concrete values (e.g. integers) as their property (e.g. parity) allows to represent multiple values having the property as a single abstract value.
+Abstracting a set of concrete values (e.g. integers) as their property (e.g. parity) allows to represent multiple values as a single abstract value.
 
-\paragraph{Abstract operation}
-To be able to apply operations on abstract values, it is necessary to define abstract operations. Abstract values are used to transform input abstract values to output abstract values. And to be semantically correct, abstract operation must preserve the same behaviour as its concrete model regarding the property used to abstract values.
+\paragraph{Abstract operations}
+To be able to apply operation (e.g. sum of integers) on abstract values, it is necessary to define abstract operations. Abstract operations are used to transform input abstract values to output abstract values. And to be semantically correct, abstract operation must preserve the same behaviour as its concrete model regarding the property used to abstract values.
 
 \vspace{1\baselineskip} % TODO
 
-Given a program and definitions of abstract values and operations, \textit{abstract interpretation} is able to interpret the program using abstract values instead of concrete values. The result of interpretation is information about properties of program values in each of program steps.
+Given a program and the definitions of abstract values and operations, \textit{abstract interpretation} is able to interpret the program using abstract values instead of concrete values. The result of interpretation is information about properties of program values in each of program steps.
 
-
-\section{Domain of abstract values}
-% \begin{itemize}
-%   \item What do abstract values represent?
-%   \item Example - $+$, $-$, $\pm$, $|x|$, output
-%   \item Abstract domains
-%   \item False alarms
-% \end{itemize}
-
-As it has been said in the introduction, \textit{abstract values} serve to express a specific set of properties of concrete values.
-
-Domain of abstract values (or \textit{abstract domain}) not only represents set of all possible abstract values, but also defines algebraic relations between values from the same domain, as described in section \ref{subsec:lattices}.
 
 \subsection{Example}\label{sec:example}
 
-To give a brief example of abstract values consider the following computation from \cite{CousotCousot77-1}:
+To give a brief example of abstract values and operations consider the following computation from \cite{CousotCousot77-1}:
 
 \[ -1515 \cdot 17 \]
 
@@ -168,6 +167,18 @@ Also the choice of domain of abstract values affects accuracy of abstract comput
 \[ -(odd) + (odd) \Rightarrow (odd) + (odd) \Rightarrow (even) \]
 
 The lack of $\top$ values in the results means that there was no accuracy lost when executing abstract computation.
+
+\section{Domain of abstract values}\label{sec:domains}
+% \begin{itemize}
+%   \item What do abstract values represent?
+%   \item Example - $+$, $-$, $\pm$, $|x|$, output
+%   \item Abstract domains
+%   \item False alarms
+% \end{itemize}
+
+As it has been said in the introduction, \textit{abstract values} serve to express a specific set of properties of concrete values.
+
+Domain of abstract values (or \textit{abstract domain}) not only represents set of all possible abstract values, but also defines algebraic relations between values from the same domain, as described in section \ref{subsec:lattices}.
 
 \subsection{Lattices of abstract values}\label{subsec:lattices}
 \begin{itemize}
@@ -215,7 +226,22 @@ Reduced product of abstract domains consist of the following components:
 %   \item Multiple representations of concrete value
 % \end{itemize}
 
-Motivation to introduce \textit{domain product} to abstract interpretation has been outlined in the beginning of this chapter - using a single abstract value to represent a program value would lead either to inaccurate results or complex implementation. Also it would not allow to deploy a new abstract domain tailored for specific problem. \cite{CousotEtAl06-ASIAN}
+\begin{figure}[ht!]
+  \centering
+  \begin {tikzpicture}[node distance=2cm]
+    \node (Top) { $\top$ };
+    \node (Zero) [below left of=Top] { $0$ };
+    \node (One) [below right of=Top] { $1$ };
+    \node (Bottom) [below right of=Zero] { $\bot$ };
+    \draw (Top) -- (Zero);
+    \draw (Top) -- (One);
+    \draw (Zero) -- (Bottom);
+    \draw (One) -- (Bottom);
+  \end {tikzpicture}
+  \caption{WTF}
+\end{figure}
+
+Motivation to introduce \textit{domain product} to abstract interpretation has been outlined in the beginning of this chapter - using a single abstract value to represent a program value would lead either to inaccurate results or complex implementation. Also it would not allow to deploy a new abstract domain tailored for a specific problem. \cite{CousotEtAl06-ASIAN}
 
 The solution is to encapsulate abstract values representing the same concrete value into a new abstract value.
 
