@@ -11,7 +11,10 @@
 % Examples
 \theoremstyle{definition}
 \newtheorem{exmp}{Example}[section]
-\newtheorem{definition}{Definition}[section]
+\newtheorem{definition}{Definition}
+
+% Additional symbols
+\usepackage{mathabx}
 
 % Pseudo-code
 \usepackage[chapter]{algorithm}
@@ -26,7 +29,7 @@
 \usepackage{tikz}
 
 % Interactive references
- \usepackage{hyperref}
+\usepackage{hyperref}
 
 % ToC setup
 \setcounter{tocdepth}{3}
@@ -132,7 +135,7 @@ Unconsciously we were using the concepts of \textit{abstract interpretation}.
 %   \item See Astre
 % \end{itemize}
 
-In some cases, a concrete question may not be answered easily. In that cases, we may resort to ask a simpler abstract question that results in an abstract answer.
+In some cases, a concrete question may not be answered easily. In those cases, we may resort to ask a simpler abstract question that results in an abstract answer.
 
 Using this abstract answer we might be able to answer the original question or at least approximate the concrete answer - in that case, the abstract answer has to be sound, but not necessarily complete. \cite{CousotCousot04-WCC}
 
@@ -237,7 +240,7 @@ Inversely to abstraction function, \textit{concretization function} is defined: 
 
 \subsection{Partial order of abstract and concrete values}
 
-We require $(D, \subseteq)$ to be a poset, where $\subseteq$ subset relation. And dually, $(D^\#, \sqsubseteq)$ to be also a poset, where $\sqsubseteq$ denotes \textit{information pre-order} [citation needed].
+We require $\langle D, \subseteq \rangle$ to be a poset, where $\subseteq$ subset relation. And dually, $\langle D^\#, \sqsubseteq \rangle$ to be also a poset, where $\sqsubseteq$ denotes \textit{information pre-order} [citation needed].
 
 \subsection{Soundness and completeness of approximation}
 
@@ -261,7 +264,7 @@ Completeness corresponds in terms of static analysis to \textit{the absence of f
 
 \subsection{Galois connection}
 
-To set an upper bound on a ``best'' possible abstraction\cite{mine-AIAA10}, \textit{Galois connection}  between posets $(D, \subseteq)$ and $(D_\#, \sqsubseteq)$ is defined via a pair of adjoined functions $\left< \alpha_{D^\#}, \gamma_{D^\#} \right>$ as followed: \cite{CousotCousot79-1}
+To set an upper bound on a ``best'' possible abstraction\cite{mine-AIAA10}, \textit{Galois connection}  between posets $(D, \subseteq)$ and $(D_\#, \sqsubseteq)$ is defined via a pair of adjoined functions $\langle \alpha_{D^\#}, \gamma_{D^\#} \rangle$ as followed: \cite{CousotCousot79-1}
 
 \begin{enumerate}
   \item $\alpha_{D^\#}$ and $\alpha_{D^\#}$ are \textit{isotone}
@@ -311,7 +314,7 @@ However, the presence of Galois connection might not always be possible or feasi
 
 \section{Abstract operations}\label{sec:operations}
 
-As stated in the introduction, abstract operation (sometimes denoted as \textit{abstract transformers}) enable to approximate results of transformations defined in programs. To preserve soundness of abstract interpretation, abstract operations also has to be sound as defined in section \ref{sec:operations-soundness}.
+As stated in the introduction, abstract operation (sometimes referred as \textit{abstract transformers}) enable to approximate results of transformations defined in programs. To preserve soundness of abstract interpretation, abstract operations also has to be sound as defined in section \ref{sec:operations-soundness}.
 
 \subsection{Sound definition}\label{sec:operations-soundness}
 
@@ -330,37 +333,37 @@ Otherwise, $F_{D^\#}$ over-approximates $F$. Therefore, we require $F_{D^\#}$ to
 \subsection{Example}
 
 \begin{exmp}[Addition, Integer Interval Domain\cite{mine-WING12}]
-  \begin{gather*}
-    D = \mathcal P(\mathbb Z)\\
-    D^\# = \{[l,h] | l,h \in \mathbb{Z} \cup \{\pm\infty\}\}\\
-    F: D \times D \to D\\
-    F(A,B) \triangleq \{a+b | a \in A, b \in B \}\\
-    F_{D^\#}: D^\# \times D^\# \to D^\#\\
-    F_{D^\#}([l_1, h_1], [l_2, h_2]) \triangleq [l_1 + l_2, h_1 + h_2]\\
-    F(\{1,2,3\}, \{0,10\}) = \{1,2,3,11,12,13\}\\
-    F_{D^\#}([1,3], [0,10]) = [1,13]
-  \end{gather*}
+  \begin{align*}
+    &D = \mathcal P(\mathbb Z)\\
+    &D^\# = \{[l,h] | l,h \in \mathbb{Z} \cup \{\pm\infty\}\}\\
+    &F: D \times D \to D\\
+    &F(A,B) \triangleq \{a+b | a \in A, b \in B \}\\
+    &F_{D^\#}: D^\# \times D^\# \to D^\#\\
+    &F_{D^\#}([l_1, h_1], [l_2, h_2]) \triangleq [l_1 + l_2, h_1 + h_2]\\
+    &F(\{1,2,3\}, \{0,10\}) = \{1,2,3,11,12,13\}\\
+    &F_{D^\#}([1,3], [0,10]) = [1,13]
+  \end{align*}
 \end{exmp}
 
 \chapter{Reduced product}
-% \begin{itemize}
-%   \item Accuracy refinement
-%   \item Specialized domains
-% \end{itemize}
 
 As demonstrated in Example in section \ref{sec:example}, a single abstract domain may not be able to accurately cover all possible abstract operations. Therefore it is convenient to incorporate \textit{multiple specialized abstract domains}. Each of these domains may capture a specific property of concrete value while ignoring other [citation].
 
-When designing a new abstract domain, this approach allows us to focus on the core functionality of the domain and does not burden us with necessity of implementing all possible abstract operations in accurate manner, which may not be possible or feasible. But it ultimately leads to the need for inter-domain communication that enables information exchange in order to refine accuracy.
+When designing a new abstract domain, this approach allows us to focus on the core functionality of the domain and does not burden us with necessity of implementing all possible abstract operations in accurate manner, which may not be possible or feasible. But it ultimately leads to the need for inter-domain accuracy refinements.
 
-From high-level view the goal of the communication framework is to encapsulate and refine abstract domains representing a single program variable, hence it can be viewed as a \textit{reduced product of abstract domains}.
+This chapter establishes \textit{domain product} in section \ref{sec:domain-product}, which is later in section \ref{sec:reduced-cardinality-product} extended into \textit{reduced cardinality product} using appropriate \textit{reduction} defined in section \ref{sec:reductions}.
 
-Reduced product of abstract domains consist of the following components:
+The chapter is concluded by a proposal of implementation in section \ref{sec:proposal-of-implementation}.
 
-\begin{description}
-  \item[Domain product] encapsulates multiple abstract values
-  \item[Communication protocol] enables inter-domain communication
-  \item[Internal structure] defines process of refinement
-\end{description}
+% From high-level view the goal of the communication framework is to encapsulate and refine abstract domains representing a single program variable, hence it can be viewed as a \textit{reduced product of abstract domains}.
+
+% Reduced product of abstract domains consist of the following components:
+
+% \begin{description}
+%   \item[Domain product] encapsulates multiple abstract values
+%   \item[Communication protocol] enables inter-domain communication
+%   \item[Internal structure] defines process of refinement
+% \end{description}
 
 \section{Domain product}\label{sec:domain-product}
 % \begin{itemize}
@@ -370,9 +373,58 @@ Reduced product of abstract domains consist of the following components:
 
 Motivation to introduce \textit{domain product} to abstract interpretation has been outlined in the beginning of this chapter - using a single abstract value to represent a program value would lead either to inaccurate results or complex implementation. Also it would not allow to deploy a new abstract domain tailored for a specific problem. \cite{CousotEtAl06-ASIAN}
 
-The solution is to encapsulate abstract values representing the same concrete value into a new abstract value.
+To circumvent this obstacle, it is convenient to introduce a \textit{domain product}, which acts as encapsulation of abstract values representing the same program variable. From an external perspective, the domain products performs as a standalone abstract domain.
 
-\section{Communication protocol}
+\textit{Domain product} is defined as follows \cite{CousotCousotMauborgne-FoSSaCS-11}:
+
+\begin{definition}
+  Let $\langle D^\#_i, \sqsubseteq_i \rangle$, $i \in I$, $I$ finite, be abstract domains. Their Cartesian product is $\langle D^\#, \sqsubseteq \rangle$, where:
+  \begin{align*}
+    &D^\# \triangleq \bigtimes_{i \in I} D^\#_i\\
+    &P \sqsubseteq Q \triangleq \bigwedge_{i \in I}\left(P_i \sqsubseteq_i Q_i \right)\\
+    &\gamma_{D^\#}: \bigtimes_{i \in I} D^\#_i \to D\\
+    &\gamma_{D^\#}(P) \triangleq \bigcap_{i \in I} \gamma_{D^\#_i}\left( P_i \right)
+  \end{align*}
+\end{definition}
+
+To approach the definition, consider the following example.
+
+\begin{exmp}
+  \begin{align*}
+    &D = D_1 = D_2 = \mathcal P(\mathbb Z)\\
+    &D^\#_1 = \{[l,h] | l,h \in \mathbb{Z} \cup \{\pm\infty\}\}\\
+    &D^\#_2 = \{\bot, ev, od, \top\}\\
+    &D^\# = D^\#_1 \times D^\#_2\\
+    &\alpha_{D^\#}(\{1,3,7\}) = \left( [1,7], od \right)\\
+    &\gamma_{D^\#}(\left( [1, 7], od \right)) = \{1,3,5,7\}
+  \end{align*}
+
+  By the definition, $\left( [1, 7], od \right) \sqsubseteq \left( [0, 7], \top \right)$, however $\left( [1, 7], od \right) \not\sqsubseteq \left( [1, 7], ev \right)$.
+\end{exmp}
+
+As it may seem that $\gamma_{D^\#}$ provides the key to refinement of abstract values, we have to keep in mind that abstract functions are still applied component-wise. Therefore we get the same results as in case of \textit{separate analyses}, as stated in \cite{CousotCousot79-1}.
+
+\section{Reduced product}\label{sec:reduced-cardinality-product}
+
+As \textit{domain product} contains multiple abstract domains, each covering different aspect of concrete value, we may increase accuracy of contained domains by exploiting inter-domain refinements.
+
+Intuitively, if one of the domains has inaccurately approximated a result of some concrete operation, while other domain was able to give an accurate abstraction, it would be convenient to enhance accuracy of the first domain using information provided by the second domain. Obviously the degree of improvement depends on the difference in the nature of abstraction used by domains.
+
+\paragraph{Soundness} To preserve soundness of analysis, a reduction of domain product has to keep its semantics -- a concrete value it represents has to remain unchanged.
+
+\textit{Reduced product} is defined in the following way: \cite{CousotCousotMauborgne-FoSSaCS-11}
+
+\begin{definition}
+  Let $\langle D^\#, \sqsubseteq \rangle$ be a \textit{domain product} with concretization function $\gamma_{D^\#}$.
+
+  Then \textit{reduced product} is $\langle D^\# /_\equiv, \sqsubseteq \rangle$, where equivalence is defined as  $\left(P \equiv Q \right) \triangleq \left(\gamma_{D^\#}(P) = \gamma_{D^\#}(Q) \right)$ and $\gamma_{D^\#}$ as well as $\sqsubseteq$ are naturally extended to the equivalence class $[P]/_\equiv$, $P \in D^\#$, of $\equiv$.
+\end{definition}
+
+\section{Approximations of reduction}\label{sec:reductions}
+
+\section{Proposal of implementation}\label{sec:proposal-of-implementation}
+
+\subsection{Communication protocol}
 \begin{itemize}
   \item Types of communication (direct, broadcast)
   \item Description of message
@@ -389,7 +441,7 @@ Extract operation applied on a given abstract value results into message contain
 
 Refine operation attempts to improve accuracy of abstract value using refinement information from refinement message.
 
-\section{Internal structure}
+\subsection{Internal structure}
 \begin{itemize}
   \item Plain and Tree
   \item Traversing algorithms
