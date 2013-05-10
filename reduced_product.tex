@@ -32,6 +32,7 @@
 \usepackage{hyperref}
 
 % ToC setup
+\usepackage[nottoc,numbib]{tocbibind}
 \setcounter{tocdepth}{3}
 
 \thesistitle{Reduced product of abstract domains}
@@ -137,7 +138,7 @@ Unconsciously we were using the concepts of \textit{abstract interpretation}.
 
 In some cases, a concrete question may not be answered easily. In those cases, we may resort to ask a simpler abstract question that results in an abstract answer.
 
-Using this abstract answer we might be able to answer the original question or at least approximate the concrete answer - in that case, the abstract answer has to be sound, but not necessarily complete. \cite{CousotCousot04-WCC}
+Using this abstract answer we might be able to answer the original question or at least approximate the concrete answer. \cite{CousotCousot04-WCC}
 
 \section{Usage in static analysis}
 
@@ -151,8 +152,11 @@ The term abstract interpretation as described in \cite{CousotCousot77-1}:
 
 In other words, the goal of program analysis using abstract interpretation is to provide information about program computation. The tool it uses to reach the goal is \textit{abstraction of values and operations}.
 
-\paragraph{Abstract values}
-Abstracting a set of concrete values (e.g. integers) as their property (e.g. parity) allows to represent multiple values as a single abstract value.
+\paragraph{Concrete value}
+A concrete value stands for a program value. E.g. number 5 is a concrete value.
+
+\paragraph{Abstract value}
+An abstract value represents a set of concrete values of a given property (e.g. parity), depending on particular definition. This abstractions allows us to approximate results of concrete executions.
 
 \paragraph{Abstract operations}
 To be able to apply operation (e.g. sum of integers) on abstract values, it is necessary to define abstract operations. Abstract operations are used to transform input abstract values to output abstract values. And to be semantically correct, abstract operation must preserve the same behaviour as its concrete model regarding the property used to abstract values.
@@ -168,7 +172,7 @@ To give a brief example of abstract values and operations consider the following
 
 \[ -1515 \cdot 17 \]
 
-To describe this computation in some abstract universe, first we need to define the domain of abstract values: symbols $(+)$ and $(-)$ to represent sign of concrete integral value and symbol $(\pm)$ for unknown sign, formally as a set $\{(+), (-), (\pm)\}$.
+To describe this concrete computation as an abstract computation, first we need to define values: symbols $(+)$ and $(-)$ to represent sign of concrete integral value and symbol $(\pm)$ for unknown sign.
 
 Using this abstract values the previous computation corresponds to the following abstract computation:
 
@@ -183,15 +187,15 @@ However using addition instead of multiplication ($-1515 + 17$) leads to inaccur
 
 As you can see, the sign of the sum of negative and positive integer might be both $+$ or $-$, depending on which component is larger in absolute value. This unknown result is in our abstract universe expressed as $(\pm)$, generally denoted as $\top$.
 
-\paragraph{Influence of domain}
-Also the choice of domain of abstract values affects accuracy of abstract computation. Choosing the domain of abstract values as $\{(even), (odd), \top\}$ to represent parity of integers instead of sign leads to the following results:
+\paragraph{Influence of abstraction}
+Also the choice of abstract values affects accuracy of abstract computation. Choosing abstract values as $\{(even), (odd), \top\}$ to represent parity of integers instead of sign leads to the following results:
 
 \[ -(odd) \cdot (odd) \Rightarrow (odd) \cdot (odd) \Rightarrow (odd) \]
 \[ -(odd) + (odd) \Rightarrow (odd) + (odd) \Rightarrow (even) \]
 
 The lack of $\top$ values in the results means that there was no accuracy lost when executing abstract computation.
 
-\section{Domain of abstract values}\label{sec:domains}
+\section{Theoretical framework}
 % \begin{itemize}
 %   \item What do abstract values represent?
 %   \item Example - $+$, $-$, $\pm$, $|x|$, output
@@ -199,50 +203,131 @@ The lack of $\top$ values in the results means that there was no accuracy lost w
 %   \item False alarms
 % \end{itemize}
 
-In abstract interpretation, an abstract value denotes a set of concrete values, which is defined either explicitly or represents a set of values of certain property \cite{CousotCousot76-1}.
+This section describes formal requirements necessary to correctly design and implement an abstract interpretation framework including \textit{reduced product}.
 
-By convention, a domain of concrete values will further be denoted as $D$ and a domain of abstract values as $D^\#$.
+\subsection{Domain of abstract values}
 
-\subsection{Abstraction}
+As abstract value represents a set of concrete values, so their domains preserve the same relation. \textit{Domain of abstract values} represents a set of all \textit{abstract values} and \textit{domain of concrete values} corresponds to a power set of all concrete values.
 
-The correspondence between a sets of concrete values and an abstract value is established by the \textit{abstraction function}: \cite{CousotCousot76-1}
+For easier comprehension, regard the following definition of \textit{integer interval domain}\cite{mine-WING12}, on which we will demonstrate the usage of defined terms in this chapter.
+
+\textit{Integer interval domain} approximates a set of integers by a pair $[l, h]$, where $l$ and $h$ represents minimal and maximal element of the set, respectively. For example:
+
+\[
+  \{ 2, 1, 100, 4 \} \to [1, 100]
+\]
+
+As it can be seen, a set of integers $\{2, 1, 100, 4\}$ is represented by integer interval domain as a pair $[1, 100]$. This so called \textit{abstraction function} is later formalized in \ref{ssec:abstraction-function}.
+
+Formal definition of domains used in the \textit{integer interval domain} follows:
+
+\begin{exmp}
+  \begin{align*}
+    &D = \mathcal P(\mathbb Z)\\
+    &D^\# = \{[l,h] | l,h \in \mathbb{Z} \cup \{\pm\infty\}\}\\
+  \end{align*}
+\end{exmp}
+
+The \textit{domain of concrete values} $D$, in case of integers, is a power set of integers $\mathbb Z$. To remind, a concrete value denotes any program value and their set describes all possible values of a given program value.
+
+And the \textit{domain of abstract values} $D^\#$ is defined to approximate sets of concrete values from $D$. In this case, it is a set of all pairs $[l, h]$, where $l$ and $h$ are integers or symbols representing positive or negative infinity.
+
+This abstraction was chosen, because it belongs to the basic abstractions used in analysis of numerical computation\cite{mine-AIAA10} and its underlying concepts are easy to understand.
+
+By convention, a domain of concrete values will further be denoted as $D$ and a domain of abstract values as $D^\#$ and their elements as $a$ and $C$ respectively.
+
+\subsection{Abstraction function}\label{ssec:abstraction-function}
+
+The correspondence between sets of concrete values and abstract values is established by the \textit{abstraction function}: \cite{CousotCousot76-1}
 
 \[
 \alpha_{D^\#}\colon D \to D^\#
 \]
 
-\begin{exmp}[Abstraction, Integer Interval Domain\cite{mine-WING12}]
-  \begin{gather*}
-    D = \mathcal P(\mathbb Z)\\
-    D^\# = \{[l,h] | l,h \in \mathbb{Z} \cup \{\pm\infty\}\}\\
-    \alpha_{D^\#}(C) \triangleq [min(C), max(C)]\\
-    \alpha_{D^\#}(\{-4, 9, 11\}) = [-4, 11]\\
-    \alpha_{D^\#}(\mathbb Z) = [-\infty, \infty]
-  \end{gather*}
+The \textit{abstraction function} assigns an abstract value to a given set of concrete values. It belongs to the core concepts of the abstract interpretation, because it provides bridge between a program values and their abstraction -- every program value has to be abstracted before proceeding with abstract interpretation of the program.
+
+To give a particular \textit{abstraction function}, consider the one used in integer interval domain:
+
+\begin{exmp}
+  \begin{align*}
+    % D = \mathcal P(\mathbb Z)\\
+    % D^\# = \{[l,h] | l,h \in \mathbb{Z} \cup \{\pm\infty\}\}\\
+    &\alpha_{D^\#}(C) \triangleq [min(C), max(C)]\\
+    &\alpha_{D^\#}(\{-1, 0, 3\}) = [-1, 3]\\
+    &\alpha_{D^\#}(\mathbb Z) = [-\infty, \infty]
+  \end{align*}
 \end{exmp}
 
-\subsection{Concretization}
-Inversely to abstraction function, \textit{concretization function} is defined: \cite{CousotCousot76-1}
+As it was outlined in the introduction to this section, the \textit{integer interval domain} represents sets of concrete values as a pair of minimal and maximal element -- the bounds of the interval.
+
+The example demonstrates application of \textit{abstraction function} $\alpha_{D^\#}$ on a small set of integers, which is rather obvious. And the second application shows interval $[-\infty, \infty]$ corresponding to the set of all integers, $\mathbb Z$.
+
+Note that this particular abstraction may include in the approximation some excessive concrete values due to its definition utilizing only minimal and maximal element -- this property of abstraction is denoted as \textit{incompleteness} and will be defined later in \ref{ssec:soundness-incompleteness}.
+
+\subsection{Concretization function}
+Dually to abstraction function, \textit{concretization function} transforms an abstract value into a set of concrete values, which are represented by the given abstract value.
+
+Importance of this function lies in the fact, that it defines a concrete semantics of abstract values -- it enables us to translate results of abstract interpretation into the universe of abstract values. And last but not least, together with abstract functions, it defines almost all subsequent terms of abstract interpretation.
+
+A \textit{concretization function} is a function of type:
 
 \[
 \gamma_{D^\#}\colon D^\# \to D
 \]
 
-\begin{exmp}[Concretization, Integer Interval Domain\cite{mine-WING12}]
-  \begin{gather*}
-    D = \mathcal P(\mathbb Z)\\
-    D^\# = \{[l,h] | l,h \in \mathbb{Z} \cup \{\pm\infty\}\}\\
-    \gamma_{D^\#}([l,h]) \triangleq \{x \in \mathbb Z | l \le x \le h\}\\
-    \gamma_{D^\#}([-1,2]) = \{-1, 0, 1, 2\}\\
-    \gamma_{D^\#}([-\infty, \infty]) = \mathbb Z
-  \end{gather*}
+One example is the concretization function of the \textit{integer interval domain}:
+
+\begin{exmp}
+  \begin{align*}
+    % D = \mathcal P(\mathbb Z)\\
+    % D^\# = \{[l,h] | l,h \in \mathbb{Z} \cup \{\pm\infty\}\}\\
+    &\gamma_{D^\#}([l,h]) \triangleq \{x \in \mathbb Z | l \le x \le h\}\\
+    &\gamma_{D^\#}([-1,3]) = \{-1, 0, 1, 2, 3\}\\
+    &\gamma_{D^\#}([-\infty, \infty]) = \mathbb Z
+  \end{align*}
 \end{exmp}
+
+Concretization function of the integer interval domain converts an interval into a set of all integers lying between the bounds of the interval, including the bounds.
+
+As you can see, this concretization function does not omit any of the concrete values inside the interval, thanks of the definition, which over-approximates the set of concrete values, thus giving guarantee on \textit{soundness} -- this property is formalized in \ref{ssec:soundness-incompleteness}.
 
 \subsection{Partial order of abstract and concrete values}
 
-We require $\langle D, \subseteq \rangle$ to be a poset, where $\subseteq$ subset relation. And dually, $\langle D^\#, \sqsubseteq \rangle$ to be also a poset, where $\sqsubseteq$ denotes \textit{information pre-order} [citation needed].
+As the domain of abstract values is defines as a power set, it can be partially ordered by set inclusion $\subseteq$. This property is interesting to abstract interpretation, because it allows to compare sets of abstract values in the sense of ``is included in'', which is a useful feature e.g. when computing a fixed point of a given loop in a program.
 
-\subsection{Soundness and completeness of approximation}
+Dually we define partial order on the domain of abstract values via $\sqsubseteq$ expressing so called ``information pre-order''. Again, this relation enables us to compare abstract values and e.g. compute abstract fix point of a loop or a program.
+
+Generally the $\sqsubseteq$ is defined as follows:
+
+\begin{definition}
+  Let $A_1, A_2 \in D^\#$, then
+  \[
+    A_1 \sqsubseteq A_2 \triangleq \gamma_{D^\#}(A_1) \subseteq \gamma_{D^\#}(A_2)
+  \]
+\end{definition}
+
+
+The following demonstration shows a link between $\subseteq$ and $\sqsubseteq$ defined in the integer interval domain:
+
+\begin{exmp}
+  \begin{align*}
+    \emptyset \subseteq \{1\} &\subseteq \{0, 1, 2\} \subseteq \mathbb Z\\
+    [1,0] \sqsubseteq [1,1] &\sqsubseteq [0,2] \sqsubseteq [-\infty,\infty]
+  \end{align*}
+\end{exmp}
+
+As it can be seen, if the sets of concrete values does not omit any value between minimal and maximal elements, operators $\subseteq$ and $\sqsubseteq$ correspond precisely. However observe the following example:
+
+\begin{exmp}
+  \begin{align*}
+    \{1, 5\} \subseteq \{0, 1, 3, 5, 7\} &\Rightarrow [1,5] \sqsubseteq [0,7]\\
+    \{ 4, 5\} \not\subseteq \{0, 7\} &\not\Rightarrow [4,5] \not\sqsubseteq [0,7]\\
+  \end{align*}
+\end{exmp}
+
+The last example has demonstrated the consequences of being \textit{incomplete} approximation. However the property of \textit{soudness} guarantees that... %TODO
+
+\subsection{Soundness and incompleteness of approximation}\label{ssec:soundness-incompleteness}
 
 \paragraph{Soundness}
 In order to be sound approximation, abstraction and concretization functions has to satisfy the following requirement: \cite{mine-AIAA10}
@@ -269,7 +354,7 @@ To set an upper bound on a ``best'' possible abstraction\cite{mine-AIAA10}, \tex
 \begin{enumerate}
   \item $\alpha_{D^\#}$ and $\alpha_{D^\#}$ are \textit{isotone}
   \item $\forall C \in D: C \subseteq \gamma_{D^\#}(\alpha_{D^\#}(C))$
-  \item $\forall A \in D^\#: A \subseteq \alpha_{D^\#}(\gamma_{D^\#}(A))$
+  \item $\forall a \in D^\#: a \subseteq \alpha_{D^\#}(\gamma_{D^\#}(a))$
 \end{enumerate}
 
 Intuitively, the presence of \textit{Galois connection} ensures that any concrete value $T \in D$ has a ``best'' approximation $\alpha_{D^\#}(T)$, that over-approximates $T$ as $T \subseteq \gamma_{D^\#}(\alpha_{D^\#}(T))$. And given any other over-approximation $R \in D^\#$, so $T \subseteq \gamma_{D^\#}(R)$, then $\alpha_{D^\#}(T)$ is more precise, because $\alpha_{D^\#}(T) \sqsubseteq R$.
@@ -312,12 +397,11 @@ However, the presence of Galois connection might not always be possible or feasi
   \caption{Parity lattice}
 \end{figure}
 
-\section{Abstract operations}\label{sec:operations}
+\subsection{Abstract operations}\label{sec:operations}
 
-As stated in the introduction, abstract operation (sometimes referred as \textit{abstract transformers}) enable to approximate results of transformations defined in programs. To preserve soundness of abstract interpretation, abstract operations also has to be sound as defined in section \ref{sec:operations-soundness}.
+As stated in the introduction, abstract operation (sometimes referred as \textit{abstract transformers}) enable to approximate results of transformations defined in programs. To preserve soundness of abstract interpretation, abstract operations also has to be \textit{sound approximation}:
 
-\subsection{Sound definition}\label{sec:operations-soundness}
-
+\begin{definition}
 For any concrete $n$-ary primitive $F: D^n \to D$, in case of Galois connection a ``best'' possible abstraction $F_{D^\#}$ is defined: \cite{mine-AIAA10}
 
 \[
@@ -330,7 +414,7 @@ Otherwise, $F_{D^\#}$ over-approximates $F$. Therefore, we require $F_{D^\#}$ to
 \forall a_i \in D^\#: F_{D^\#}((\gamma_{D^\#}(a_i))_{1 \le i \le n}) \subseteq \gamma_{D^\#}(F((a_i)_{1 \le i \le n}))
 \]
 
-\subsection{Example}
+\end{definition}
 
 \begin{exmp}[Addition, Integer Interval Domain\cite{mine-WING12}]
   \begin{align*}
@@ -512,15 +596,7 @@ Provided the previous components, \textsc{Canal} is able to statically analyze g
   \item Walkthrough of Integer domain RP implementation
 \end{itemize}
 
-
-\chapter{Measurements}
-\begin{itemize}
-  \item Accuracy
-  \item Performance
-\end{itemize}
-\section{Artificial programs analysis}
-\section{\textsc{GNU Core Utilities} analysis}
-
+\chapter{\textsc{GNU Core Utilities} analysis}
 
 \chapter{Conclusion}
 \section{Impact on program analysis}
