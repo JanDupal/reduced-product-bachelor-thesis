@@ -295,7 +295,7 @@ As you can see, this concretization function does not omit any of the concrete v
 
 \subsection{Partial order of abstract and concrete values}
 
-Since the domain of abstract values is defined as a power set, it can be partially ordered by set inclusion $\subseteq$. This property is interesting to abstract interpretation, because it allows to compare sets of abstract values in the sense of ``is included in'', which is a useful feature e.g. when computing a fixed point of a given loop in a program.
+Since the domain of concrete values is defined as a power set, it can be partially ordered by set inclusion $\subseteq$. This property is interesting to abstract interpretation, because it allows to compare sets of abstract values in the sense of ``is included in'', which is a useful feature e.g. when computing a fixed point of a given loop in a program.
 
 Dually we define partial order on the domain of abstract values via $\sqsubseteq$ also expressing ``is included in''. Again, this relation enables us to compare abstract values and e.g. compute abstract fix point of a loop or of a complete program.
 
@@ -562,7 +562,7 @@ In case of Galois connection, abstract operations are precisely defined, because
 
   Equivalently:
   \[
-    F_{D^\#}(a_1,..., a_i, ..., a_n) =  \alpha_{D^\#}(\{F(c_1,..., c_i, ..., c_n) | 1 \le i \le n, c_i \in \gamma_{D^\#}(a_i)\})
+    F_{D^\#}(a_1,..., a_i, ..., a_n) =  \alpha_{D^\#}(\{F(c_1,..., c_i, ..., c_n) | \forall i, 1 \le i \le n: c_i \in \gamma_{D^\#}(a_i)\})
   \]
 \end{definition}
 
@@ -599,25 +599,23 @@ It can be shown, that the procedure described is equivalent to an interval with 
 
 The first example shows sum of two intervals representing only one concrete values, which result is obvious. The latter example demonstrates a sum of two non-trivial intervals and it can be seen that the result interval is computed as sum of lower and upper bounds of the input intervals, respectively.
 
-\chapter{Reduced product}
+\chapter{Reduced product}\label{ch:reduced-product}
 
-As demonstrated in Example in section \ref{sec:example}, a single abstract domain may not be able to accurately cover all possible abstract operations. Therefore it is convenient to incorporate \textit{multiple specialized abstract domains}. Each of these domains may capture a specific property of concrete value while ignoring other [citation].
+As demonstrated in example in section \ref{sec:example}, a single abstract domain may not be able to accurately cover all possible abstract operations. To solve this issue, abstract interpretation provides two options:
 
-When designing a new abstract domain, this approach allows us to focus on the core functionality of the domain and does not burden us with necessity of implementing all possible abstract operations in accurate manner, which may not be possible or feasible. But it ultimately leads to the need for inter-domain accuracy refinements.
+\paragraph{One universal abstract domain}
+Deploying one universal abstract domain requires no modification to abstract interpretation defined in previous chapters, but design of such universal abstract domain has shown as very difficult task, which may not be feasible or even possible.
 
-This chapter establishes \textit{domain product} in section \ref{sec:domain-product}, which is later in section \ref{sec:reduced-cardinality-product} extended into \textit{reduced cardinality product} using appropriate \textit{reduction} defined in section \ref{sec:reductions}.
+\paragraph{Multiple specialized abstract domains}
+The other choice is to modify abstract interpretation framework to allow parallel incorporating via multiple specialized abstract domain and provide refinement between domains to improve their accuracy. So each of these domains may capture a specific property of concrete value while ignoring other.
 
-The chapter is concluded by a proposal of implementation in section \ref{sec:proposal-of-implementation}.
+\vspace{1.5\baselineskip} % TODO
 
-% From high-level view the goal of the communication framework is to encapsulate and refine abstract domains representing a single program variable, hence it can be viewed as a \textit{reduced product of abstract domains}.
+In this thesis we describe the second approach, because of its advantages:
 
-% Reduced product of abstract domains consist of the following components:
+When designing a new abstract domain, this approach allows us to focus on the core functionality of the domain and does not burden us with necessity of implementing all possible abstract operations in accurate manner, which may not be possible or feasible.
 
-% \begin{description}
-%   \item[Domain product] encapsulates multiple abstract values
-%   \item[Communication protocol] enables inter-domain communication
-%   \item[Internal structure] defines process of refinement
-% \end{description}
+But it ultimately leads to the need for inter-domain accuracy refinements, which is the topic of this chapter. This chapter establishes \textit{domain product} in section \ref{sec:domain-product}, which is later in section \ref{sec:reduced-cardinality-product} extended into \textit{reduced cardinality product}.
 
 \section{Domain product}\label{sec:domain-product}
 % \begin{itemize}
@@ -632,7 +630,7 @@ To circumvent this obstacle, it is convenient to introduce a \textit{domain prod
 \textit{Domain product} is defined as follows \cite{CousotCousotMauborgne-FoSSaCS-11}:
 
 \begin{definition}
-  Let $\langle D^\#_i, \sqsubseteq_i \rangle$, $i \in I$, $I$ finite, be abstract domains. Their Cartesian product is $\langle D^\#, \sqsubseteq \rangle$, where:
+  Let $\langle D^\#_i, \sqsubseteq_i \rangle$, $i \in I$, $I$ is finite, be abstract domains. Their Cartesian product is $\langle D^\#, \sqsubseteq \rangle$, where:
   \begin{align*}
     &D^\# \triangleq \bigtimes_{i \in I} D^\#_i\\
     &P \sqsubseteq Q \triangleq \bigwedge_{i \in I}\left(P_i \sqsubseteq_i Q_i \right)\\
@@ -641,30 +639,41 @@ To circumvent this obstacle, it is convenient to introduce a \textit{domain prod
   \end{align*}
 \end{definition}
 
-To approach the definition, consider the following example.
+Domain product $D^\#$ is defined as a simple Cartesian product of the contained abstract domains, thus contained values are independent of each other.
 
-\begin{exmp}
+The semantics of $\sqsubseteq$ is naturally expanded to the set of contained domains as it is defined component-wise and $P \sqsubseteq Q$ is defined if and only if it is defined on all corresponding components of $P$ and $Q$.
+
+The concretization function $\gamma_{D^\#}$ is intuitively defined as intersection of concretization of all contained abstract values.
+
+To approach the definition, consider the following example of domain product of integer interval domain and an \textit{abstract domain representing parity}.
+
+\begin{exmp}\label{exmp:domain-product}
+  Definition of the integer interval domain and the parity domain:
   \begin{align*}
     &D = D_1 = D_2 = \mathcal P(\mathbb Z)\\
     &D^\#_1 = \{[l,h] | l,h \in \mathbb{Z} \cup \{\pm\infty\}\}\\
     &D^\#_2 = \{\bot, ev, od, \top\}\\
-    &D^\# = D^\#_1 \times D^\#_2\\
-    &\alpha_{D^\#}(\{1,3,7\}) = \left( [1,7], od \right)\\
-    &\gamma_{D^\#}(\left( [1, 7], od \right)) = \{1,3,5,7\}
+    &D^\# = D^\#_1 \times D^\#_2
   \end{align*}
 
-  By the definition, $\left( [1, 7], od \right) \sqsubseteq \left( [0, 7], \top \right)$, however $\left( [1, 7], od \right) \not\sqsubseteq \left( [1, 7], ev \right)$.
+  Example usage of the concretization function:
+  \begin{align*}
+    \gamma_{D^\#}(\left( [0, 4], \top \right)) &= \{0,1,2,3,4\}\\
+    \gamma_{D^\#}(\left( [0, 4], od \right)) &= \{1,3\}
+  \end{align*}
 \end{exmp}
 
-As it may seem that $\gamma_{D^\#}$ provides the key to refinement of abstract values, we have to keep in mind that abstract functions are still applied component-wise. Therefore we get the same results as in case of \textit{separate analyses}, as stated in \cite{CousotCousot79-1}.
+The example demonstrates domain product of two abstract domains and results of concretization function. As it may seem that concretization function $\gamma_{D^\#}$ provides the key to refinement of abstract values, we have to keep in mind that \textit{abstract functions are still applied component-wise}. Therefore we get the same results as in case of separate analyses, as stated in \cite{CousotCousot79-1}.
 
 \section{Reduced product}\label{sec:reduced-cardinality-product}
 
 As \textit{domain product} contains multiple abstract domains, each covering different aspect of concrete value, we may increase accuracy of contained domains by exploiting inter-domain refinements.
 
-Intuitively, if one of the domains has inaccurately approximated a result of some concrete operation, while other domain was able to give an accurate abstraction, it would be convenient to enhance accuracy of the first domain using information provided by the second domain. Obviously the degree of improvement depends on the difference in the nature of abstraction used by domains.
+Intuitively, if one of the domains has inaccurately approximated a result of some concrete operation, while another domain was able to give an accurate abstraction, it would be convenient to enhance accuracy of the first domain using information provided by the second domain. Obviously the degree of improvement depends on the difference in the nature of abstraction used by domains.
 
-\paragraph{Soundness} To preserve soundness of analysis, a reduction of domain product has to keep its semantics -- a concrete value it represents has to remain unchanged.
+\textit{Reduced product} provides framework for improvements of abstract domains contained in \textit{domain product}. But in order to preserve correctness of abstract interpretation, it has to hold the following:
+
+\paragraph{Soundness}  A reduction of domain product has to keep its concrete semantics unmodified -- a concrete value it represents has to remain the same as before reduction.
 
 \textit{Reduced product} is defined in the following way: \cite{CousotCousotMauborgne-FoSSaCS-11}
 
@@ -674,35 +683,23 @@ Intuitively, if one of the domains has inaccurately approximated a result of som
   Then \textit{reduced product} is $\langle D^\# /_\equiv, \sqsubseteq \rangle$, where equivalence is defined as  $\left(P \equiv Q \right) \triangleq \left(\gamma_{D^\#}(P) = \gamma_{D^\#}(Q) \right)$ and $\gamma_{D^\#}$ as well as $\sqsubseteq$ are naturally extended to the equivalence class $[P]/_\equiv$, $P \in D^\#$, of $\equiv$.
 \end{definition}
 
-\section{Approximations of reduction}\label{sec:reductions}
+The consequence of the soundness requirement is that reduced product can improve contained abstract values, but only to the point when it still stays in the same \textit{equivalence class of concrete values}, which is expressed by the definition.
 
-\section{Proposal of implementation}\label{sec:proposal-of-implementation}
+Let us show usage of reduced product on the integer interval domain and the parity domain:
 
-\subsection{Communication protocol}
-\begin{itemize}
-  \item Types of communication (direct, broadcast)
-  \item Description of message
-  \item Properties of message (lattice)
-  % \item Extract
-  % \item Refine
-\end{itemize}
+\begin{exmp}
+  Let $D^\#_1$ be the integer interval domain and $D^\#_2$ be the parity domain (defined in example \ref{exmp:domain-product}).
 
-\subsection{Extract operation}
+  Reduction of abstract value $\left( [0,6], od \right)$:
+  \begin{align*}
+    D^\#_1 \times D^\#_2 &: \left( [0,6], od \right) \to \left([1, 5], od \right)\\
+    \mathcal P(\mathbb Z) &: \{1,2,3,4,5\} \to \{1,2,3,4,5\}
+  \end{align*}
+\end{exmp}
 
-Extract operation applied on a given abstract value results into message containing refinement information.
+The previous example demonstrates principles of reduced product -- while its concretization stays the same, the interval abstract value is refined to exclude boundaries, which are not odd. This can be achieved, because the parity abstract value was able to prove that the concrete value is always odd.
 
-\subsection{Refine operation}
-
-Refine operation attempts to improve accuracy of abstract value using refinement information from refinement message.
-
-\subsection{Internal structure}
-\begin{itemize}
-  \item Plain and Tree
-  \item Traversing algorithms
-  \item Expected impact on accuracy and performance
-  \item Correctness, convergence, complexity
-\end{itemize}
-
+However, implementation of the most precise reduce product,as defined here, can hardly be modular and feasible \cite{CousotCousotMauborgne-FoSSaCS-11}, thus in practice only over-approximations are used. One approach to reduced product approximation is described in the following chapter.
 
 \chapter{Implementation in \textsc{Canal}}
 % \begin{itemize}
@@ -727,7 +724,7 @@ It consists of three main components:
   \item[Operations] translation from program instructions to operations on abstract values
 \end{description}
 
-Components \textit{abstract domains} and \textit{operations} correspond to entities described in chapter \ref{ch:abstract-interpretation}. \textit{Interpreter} involves concept of \textit{least fixed point} (section \ref{sec:fixed-point}) and it is interesting from technical point of view, because it incorporates LLVM libraries for interaction with source code.
+Components \textit{abstract domains} and \textit{operations} correspond to entities described in chapter \ref{ch:abstract-interpretation}. \textit{Interpreter} involves concept of \textit{least fixed point} and it is interesting from technical point of view, because it incorporates LLVM libraries for interaction with source code.
 
 LLVM is a a compiler framework, which provides a combination of key capabilities that are important for practical, lifelong analysis and
 transformation of programs. \cite{llvm} It isolates \textsc{Canal} from machine-level semantics of C language and allows to offload processes associated with compiling and instruction-level analysis, therefore development of \textsc{Canal} can fully focus on abstract interpretation.
@@ -742,9 +739,35 @@ Provided the previous components, \textsc{Canal} is able to statically analyze g
   \item Execution of abstract operations on abstract values
 \end{enumerate}
 
+Abstract interpretation is involved from step 3 to step 5, particularly \textit{reduced product} is repeatedly deployed in step 5 to improve accuracy of abstract operation results.
+
 \section{Framework of reduced product in \textsc{Canal}}
 
-\subsection{Containers}
+This section describes implementation of \textit{reduced product} based on theory introduced in chapter \ref{ch:reduced-product}. To remind, the target of reduced product is to improve accuracy of contained abstract values without changing its concrete semantics -- the result of concretization function.
+
+Precisely this implementation is over-approximation of reduced product, because the most precise implementation of reduced product may be very hard if unfeasible. Also the most precise implementation would put constraints on modularity of the whole abstract interpretation framework, thus making its design and implementation difficult.
+
+Therefore we have chosen to implement over-approximation of reduced product, which approaches the accuracy of the most precise reduced product via inter-domain communication, while keeping the property of soundness.
+
+Principles of accuracy refinement are based on concept of inter-domain communication framework -- abstract values contained in reduced product are allowed to produce messages , which may be consumed by other domains and the contained information may lead to accuracy refinement.
+
+Communication framework over-approximating reduced product consists of the following components:
+
+\begin{description}
+  \item[Domain product] encapsulates multiple abstract values
+  \item[Communication protocol] enables inter-domain communication
+  \item[Execution plan] defines process of inter-domain information exchange
+\end{description}
+
+When designing implementation, the functionality of communication framework was projected into existing OOP structure of \textsc{Canal} project and resulted into the following entities with specified responsibilities:
+
+\begin{description}
+  \item[Container] provides encapsulation (domain product) and defines order of execution of message production and consumption (execution plan)
+  \item[Messages] describe format of exchanged information
+  \item[Execution plan] defines process of inter-domain information exchange
+\end{description}
+
+\subsection{Container}
 \begin{itemize}
   \item Vector, Tree
   \item Cons and pros
@@ -760,6 +783,10 @@ Provided the previous components, \textsc{Canal} is able to statically analyze g
 \begin{itemize}
   \item Design of extract/refine operations
 \end{itemize}
+
+Extract operation applied on a given abstract value results into message containing refinement information.
+
+Refine operation attempts to improve accuracy of abstract value using refinement information from refinement message.
 
 \section{Integer reduced product}
 \begin{itemize}
