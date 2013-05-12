@@ -27,6 +27,8 @@
 
 % Diagrams
 \usepackage{tikz}
+\usetikzlibrary{calc}
+\usetikzlibrary{positioning}
 
 % Interactive references
 \usepackage{hyperref}
@@ -238,7 +240,7 @@ By convention, a domain of concrete values will further be denoted as $D$ and a 
 
 \subsection{Abstraction function}\label{ssec:abstraction-function}
 
-The correspondence between sets of concrete values and abstract values is established by the \textit{abstraction function}: \cite{CousotCousot76-1}
+The correspondence between sets of concrete values and abstract values is established by the \textit{abstraction function} \cite{CousotCousot76-1}:
 
 \[
 \alpha_{D^\#}\colon D \to D^\#
@@ -293,9 +295,9 @@ As you can see, this concretization function does not omit any of the concrete v
 
 \subsection{Partial order of abstract and concrete values}
 
-As the domain of abstract values is defines as a power set, it can be partially ordered by set inclusion $\subseteq$. This property is interesting to abstract interpretation, because it allows to compare sets of abstract values in the sense of ``is included in'', which is a useful feature e.g. when computing a fixed point of a given loop in a program.
+Since the domain of abstract values is defined as a power set, it can be partially ordered by set inclusion $\subseteq$. This property is interesting to abstract interpretation, because it allows to compare sets of abstract values in the sense of ``is included in'', which is a useful feature e.g. when computing a fixed point of a given loop in a program.
 
-Dually we define partial order on the domain of abstract values via $\sqsubseteq$ expressing so called ``information pre-order''. Again, this relation enables us to compare abstract values and e.g. compute abstract fix point of a loop or a program.
+Dually we define partial order on the domain of abstract values via $\sqsubseteq$ also expressing ``is included in''. Again, this relation enables us to compare abstract values and e.g. compute abstract fix point of a loop or of a complete program.
 
 Generally the $\sqsubseteq$ is defined as follows:
 
@@ -307,127 +309,295 @@ Generally the $\sqsubseteq$ is defined as follows:
 \end{definition}
 
 
-The following demonstration shows a link between $\subseteq$ and $\sqsubseteq$ defined in the integer interval domain:
+The following demonstration shows definition of $\sqsubseteq$ and a link between $\subseteq$ and $\sqsubseteq$ in the integer interval domain:
 
 \begin{exmp}
   \begin{align*}
+    [l_1, h_1] \sqsubseteq [l_2, h_2] &\triangleq l_1 \ge l_2 \wedge h_1 \le h_2\\
     \emptyset \subseteq \{1\} &\subseteq \{0, 1, 2\} \subseteq \mathbb Z\\
     [1,0] \sqsubseteq [1,1] &\sqsubseteq [0,2] \sqsubseteq [-\infty,\infty]
   \end{align*}
 \end{exmp}
 
-As it can be seen, if the sets of concrete values does not omit any value between minimal and maximal elements, operators $\subseteq$ and $\sqsubseteq$ correspond precisely. However observe the following example:
+As it can be seen, if the sets of concrete values do not omit any value between minimal and maximal element, operators $\subseteq$ and $\sqsubseteq$ correspond precisely. However, if the set of concrete values does not cover the whole range, $\not\subseteq$ may not imply $\not\sqsubseteq$ -- observe the following example:
 
 \begin{exmp}
   \begin{align*}
-    \{1, 5\} \subseteq \{0, 1, 3, 5, 7\} &\Rightarrow [1,5] \sqsubseteq [0,7]\\
+    \{0, 7\} \not\subseteq \{4, 5\} &\Rightarrow [0,7] \not\sqsubseteq [4,5]\\
     \{ 4, 5\} \not\subseteq \{0, 7\} &\not\Rightarrow [4,5] \not\sqsubseteq [0,7]\\
   \end{align*}
 \end{exmp}
 
-The last example has demonstrated the consequences of being \textit{incomplete} approximation. However the property of \textit{soudness} guarantees that... %TODO
+While the first case in the last example confirms the implication, the second serves as a counterexample. This example demonstrates the consequences of using approximations in static analysis, a deeper insight into properties of approximation is provided by section \ref{ssec:soundness-incompleteness}.
 
-\subsection{Soundness and incompleteness of approximation}\label{ssec:soundness-incompleteness}
+Using partial order defined by $\sqsubseteq$ and defining $\bot$ and $\top$ as minimal and maximal elements of the set $D^\#$, we are able to construct a lattice of abstract values.
+
+\begin{figure}[ht!]
+  \centering
+  \begin {tikzpicture}[on grid]
+    % nodes
+    \node (bot) at (0,-1) { $\bot$ };
+
+    \node (-3_-3) at (-6,1) {};
+    \node (-2_-2) at (-4,1) { $[-2, -2]$ };
+    \node (-1_-1) at (-2,1) { $[-1, -1]$ };
+    \node (0_0) at (0,1) { $[0, 0]$ };
+    \node (1_1) at (2,1) { $[1, 1]$ };
+    \node (2_2) at (4,1) { $[2, 2]$ };
+    \node (3_3) at (6,1) {};
+
+    \node (-3_-2) at (-5,2) {};
+    \node (-2_-1) at (-3,2) { $[-2, -1]$ };
+    \node (-1_0) at (-1,2) { $[-1, 0]$ };
+    \node (0_1) at (1,2) { $[0, 1]$ };
+    \node (1_2) at (3,2) { $[1, 2]$ };
+    \node (2_3) at (5,2) {};
+
+    \node (-3_-1) at (-4,3) {};
+    \node (-2_0) at (-2,3) { $[-2, 0]$ };
+    \node (-1_1) at (0,3) { $[-1, 1]$ };
+    \node (0_2) at (2,3) { $[0, 2]$ };
+    \node (1_3) at (4,3) {};
+
+    \node (-3_0) at (-3,4) {};
+    \node (-2_1) at (-1,4) { $[-2, 1]$ };
+    \node (-1_2) at (1,4) { $[-1, 2]$ };
+    \node (0_3) at (3,4) {};
+
+    \node (-3_1) at (-2,5) {};
+    \node (-2_2) at (0,5) { $[-2, 2]$ };
+    \node (-1_3) at (2,5) {};
+
+    \node (-3_2) at (-1,6) {};
+    \node (-2_3) at (1,6) {};
+
+    \node (top) at (0,8) { $\top$ };
+    \node (subt0) at (-4, 6.5) {};
+    \node (subt1) at (-2, 6.5) {};
+    \node (subt2) at (0, 6.5) {};
+    \node (subt3) at (2, 6.5) {};
+    \node (subt4) at (4, 6.5) {};
+
+    % lines
+    \draw[dashed] ($(bot) !.5! (-3_-3) $) -- ($(bot) !.9! (-3_-3) $);
+    \draw         (bot) -- ($(bot) !.5! (-3_-3) $);
+    \draw         (bot) -- (-2_-2);
+    \draw         (bot) -- (-1_-1);
+    \draw         (bot) -- (0_0);
+    \draw         (bot) -- (1_1);
+    \draw         (bot) -- (2_2);
+    \draw         (bot) -- ($(bot) !.5! (3_3) $);
+    \draw[dashed] ($(bot) !.5! (3_3) $) -- ($(bot) !.9! (3_3) $);
+
+    \draw[dashed] (-2_-2) -- ($(-2_-2) !.8! (-3_-2) $);
+    \draw         (-2_-2) -- (-2_-1);
+    \draw         (-1_-1) -- (-2_-1);
+    \draw         (-1_-1) -- (-1_0);
+    \draw         (0_0)   -- (-1_0);
+    \draw         (0_0)   -- (0_1);
+    \draw         (1_1)   -- (0_1);
+    \draw         (1_1)   -- (1_2);
+    \draw         (2_2)   -- (1_2);
+    \draw[dashed] (2_2)   -- ($(2_2) !.8! (2_3) $);
+
+    \draw[dashed] (-2_-1) -- ($(-2_-1) !.8! (-3_-1) $);
+    \draw         (-2_-1) -- (-2_0);
+    \draw         (-1_0)  -- (-2_0);
+    \draw         (-1_0)  -- (-1_1);
+    \draw         (0_1)   -- (-1_1);
+    \draw         (0_1)   -- (0_2);
+    \draw         (1_2)   -- (0_2);
+    \draw[dashed] (1_2)   -- ($(1_2) !.8! (1_3) $);
+
+    \draw[dashed] (-2_0) -- ($(-2_0) !.8! (-3_0) $);
+    \draw         (-2_0) -- (-2_1);
+    \draw         (-1_1) -- (-2_1);
+    \draw         (-1_1) -- (-1_2);
+    \draw         (0_2)  -- (-1_2);
+    \draw[dashed] (0_2) -- ($(0_2) !.8! (0_3) $);
+
+    \draw[dashed] (-2_1) -- ($(-2_1) !.8! (-3_1) $);
+    \draw         (-2_1) -- (-2_2);
+    \draw         (-1_2) -- (-2_2);
+    \draw[dashed] (-1_2) -- ($(-1_2) !.8! (-1_3) $);
+
+    \draw[dashed] (-2_2) -- ($(-2_2) !.8! (-3_2) $);
+    \draw[dashed] (-2_2) -- ($(-2_2) !.8! (-2_3) $);
+
+    \draw[dashed] (top) -- ($(top) !.66! (subt0) $);
+    \draw[dashed] ($(top) !.5! (subt1) $) -- (subt1);
+    \draw         (top) -- ($(top) !.5! (subt1) $);
+    \draw[dashed] ($(top) !.5! (subt2) $) -- (subt2);
+    \draw         (top) -- ($(top) !.5! (subt2) $);
+    \draw[dashed] ($(top) !.5! (subt3) $) -- (subt3);
+    \draw         (top) -- ($(top) !.5! (subt3) $);
+    \draw[dashed] (top) -- ($(top) !.66! (subt4) $);
+  \end {tikzpicture}
+  \caption{Lattice of integer interval domain}
+  \label{fig:interval-lattice}
+\end{figure}
+
+The figure \ref{fig:interval-lattice} show a part of infinite lattice of the integer interval abstract domain. The edges correspond to $\sqsubseteq$ relation except for transitivity. As it can be seen, the lowest level represents an abstract value corresponding to an empty set. One level higher are placed intervals standing for sets of length one and edges connect them to intervals in upper level while expressing ``is included in'' relation.
+
+% \begin{figure}[ht!]
+%   \centering
+%   \begin {tikzpicture}[node distance=1.5cm]
+%     \node (Top) { $\top$ };
+%     \node (Even) [below left=of Top] { $ev$ };
+%     \node (Odd) [below right=of Top] { $od$ };
+%     \node (Bottom) [below right=of Even] { $\bot$ };
+%     \draw (Top) -- (Even);
+%     \draw (Top) -- (Odd);
+%     \draw (Even) -- (Bottom);
+%     \draw (Odd) -- (Bottom);
+%   \end {tikzpicture}
+%   \caption{Lattice of parity domain}
+% \end{figure}
+
+\subsection{Correctness of approximation}\label{ssec:soundness-incompleteness}
+
+If we want to gain informative results via a program analysis, we have to ensure that the analysis is \textit{correct}. Correctness consists of three distinct properties: \textit{soundness}, \textit{completeness} and \textit{termination}.
 
 \paragraph{Soundness}
-In order to be sound approximation, abstraction and concretization functions has to satisfy the following requirement: \cite{mine-AIAA10}
+Soundness expresses, that a given abstraction do include every case having a particular property, but since it is an over-approximations, some of those cases might not occur in the reality.
+
+In order to be sound analysis, the abstraction and concretization functions has to satisfy the following requirement \cite{mine-AIAA10}:
 
 \[
   \forall C \in D: C \subseteq \gamma_{D^\#}(\alpha_{D^\#}(C))
 \]
 
-Intuitively soundness means, that no concrete value is omitted by abstraction. In context of program analysis, soundness expresses \textit{the lack of false negatives}, which is often required property.
+Intuitively soundness means, that no concrete value is omitted by abstraction. In the context of program analysis, soundness represents the \textit{lack of false negatives}, which is often required property.
+
+For example, when analysing a program and there is a \textit{possibility} of zero division occurrence, sound analysis has to report this fact.
+
+The proof of soundness of integer interval domain is as follows:
+
+\begin{proof}
+  Let $D$, $D^\#$, $\alpha_{D^\#}$ and $\gamma_{D^\#}$ be defined as in the integer interval domain. We want to prove:
+  \[
+    \forall C \in D: C \subseteq \gamma_{D^\#}(\alpha_{D^\#}(C))
+  \]
+  Via definition:
+  \begin{align*}
+    \gamma_{D^\#}(\alpha_{D^\#}(C)) &= \gamma_{D^\#}([min(C), max(C)])\\
+    &= \{ x \in \mathbb Z | min(C) \le x \le max(C) \}
+  \end{align*}
+  When substituted into the original expression:
+  \[
+    \forall C \in \mathcal P(\mathbb Z): C \subseteq \{ x \in \mathbb Z | min(C) \le x \le max(C) \}
+  \]
+  Which proves soundness of the integer interval domain.
+\end{proof}
 
 \paragraph{Completeness}
-In opposite to soundness, \textit{completeness} is not required by abstract interpretation. But its presence is very valuable. It is defined as: \cite{mine-AIAA10}
+Dually to soundness, completeness represent guarantee that any statement proved in abstract is also valid in concrete \cite{mine-AIAA10}, which means that a statement derived from abstraction is truthful for every individual concrete case.
+
+Completeness requires the following \cite{mine-AIAA10}:
 
 \[
   \forall C \in D: C \supseteq \gamma_{D^\#}(\alpha_{D^\#}(C))
 \]
 
-Completeness corresponds in terms of static analysis to \textit{the absence of false positives}.
+In the context of abstract analysis, completeness corresponds to the \textit{absence of false positives}. For example, false positive result is case when program analysis reports zero division, while it is not possible to occur.
+
+Since abstract interpretation does not require completeness (reason will be given later), it might not be present as we can prove in case of the integer interval domain:
+
+\begin{proof}
+  Let $D$, $D^\#$, $\alpha_{D^\#}$ and $\gamma_{D^\#}$ be defined as in the integer interval domain. We want to refute:
+  \[
+    \forall C \in D: C \supseteq \gamma_{D^\#}(\alpha_{D^\#}(C))
+  \]
+  We will use counterexample $C = \{1, 3\}$:
+  \begin{align*}
+    \gamma_{D^\#}(\alpha_{D^\#}(\{1, 3\})) &= \gamma_{D^\#}([1, 3])\\
+    &= \{1, 2, 3\}
+  \end{align*}
+  Obviously:
+  \[
+    \{1, 3\} \not\supseteq \{1, 2, 3\}
+  \]
+  Which proves \textit{incompleteness} of the integer interval domain.
+\end{proof}
+
+\paragraph{Termination} Termination is also very important property of a program analysis. However, termination is mainly matter of fix point computation, which is not the topic of this thesis. Details can be found in \cite{CousotCousot79-1}.
+
+To conclude this section, abstract interpretation requires \textit{soundness} and \textit{termination}, while \textit{completeness} is not achievable as in case of all sound formal methods \cite{CousotEtAl06-ASIAN}.
 
 \subsection{Galois connection}
 
-To set an upper bound on a ``best'' possible abstraction\cite{mine-AIAA10}, \textit{Galois connection}  between posets $(D, \subseteq)$ and $(D_\#, \sqsubseteq)$ is defined via a pair of adjoined functions $\langle \alpha_{D^\#}, \gamma_{D^\#} \rangle$ as followed: \cite{CousotCousot79-1}
+When designing an abstract interpretation framework, one of methods shown in \cite{CousotCousot92-2} is via defining \textit{Galois connection} as introduced in \cite{CousotCousot76-1}. Galois connection puts constraints on abstraction and concretization function in exchange of interesting properties, e.g. ``best'' approximation, which will be described later in this section.
 
-\begin{enumerate}
-  \item $\alpha_{D^\#}$ and $\alpha_{D^\#}$ are \textit{isotone}
-  \item $\forall C \in D: C \subseteq \gamma_{D^\#}(\alpha_{D^\#}(C))$
-  \item $\forall a \in D^\#: a \subseteq \alpha_{D^\#}(\gamma_{D^\#}(a))$
-\end{enumerate}
+Galois connection is defined via a pair of adjoined functions $\langle \alpha_{D^\#}, \gamma_{D^\#} \rangle$ as followed: \cite{CousotCousot79-1}
+
+\begin{definition}
+  Let $\langle D, \subseteq \rangle$, $\langle D^\#, \sqsubseteq \rangle$ be posets and $\alpha_{D^\#}$, $\gamma_{D^\#}$ abstraction and concretization functions respectively.
+
+  A pair $\langle \alpha_{D^\#}, \gamma_{D^\#} \rangle$ defines Galois connection if the following criteria are met.
+  \begin{enumerate}
+    \item $\alpha_{D^\#}$ and $\alpha_{D^\#}$ are \textit{isotone}, in terms of $\subseteq$ and $\sqsubseteq$
+    \item $\forall C \in D: C \subseteq \gamma_{D^\#}(\alpha_{D^\#}(C))$
+    \item $\forall a \in D^\#: a \subseteq \alpha_{D^\#}(\gamma_{D^\#}(a))$
+  \end{enumerate}
+\end{definition}
 
 Intuitively, the presence of \textit{Galois connection} ensures that any concrete value $T \in D$ has a ``best'' approximation $\alpha_{D^\#}(T)$, that over-approximates $T$ as $T \subseteq \gamma_{D^\#}(\alpha_{D^\#}(T))$. And given any other over-approximation $R \in D^\#$, so $T \subseteq \gamma_{D^\#}(R)$, then $\alpha_{D^\#}(T)$ is more precise, because $\alpha_{D^\#}(T) \sqsubseteq R$.
 
-Galois connection also allows us to define \textit{soundness} and \textit{completeness} dually. Moreover, it also defines \textit{abstract operation} in a precise way as shown in \ref{sec:operations}.
+% TODO draw a diagram representing GC
 
-However, the presence of Galois connection might not always be possible or feasible.
-
-\subsection{Lattices of abstract values}
-
-\begin{figure}[ht!]
-  \centering
-  \begin {tikzpicture}[node distance=1.5cm]
-    \node (Top) { $\top$ };
-    \node (Positive) [below left of=Top] { $(+)$ };
-    \node (Negative) [below right of=Top] { $(-)$ };
-    \node (Zero) [below right of=Positive] { $0$ };
-    \node (Bottom) [below of=Zero] { $\bot$ };
-    \draw (Top) -- (Positive);
-    \draw (Top) -- (Negative);
-    \draw (Positive) -- (Zero);
-    \draw (Negative) -- (Zero);
-    \draw (Zero) -- (Bottom);
-  \end {tikzpicture}
-  \caption{Sign lattice}
-\end{figure}
-
-\begin{figure}[ht!]
-  \centering
-  \begin {tikzpicture}[node distance=1.5cm]
-    \node (Top) { $\top$ };
-    \node (Even) [below left of=Top] { $ev$ };
-    \node (Odd) [below right of=Top] { $od$ };
-    \node (Bottom) [below right of=Even] { $\bot$ };
-    \draw (Top) -- (Even);
-    \draw (Top) -- (Odd);
-    \draw (Even) -- (Bottom);
-    \draw (Odd) -- (Bottom);
-  \end {tikzpicture}
-  \caption{Parity lattice}
-\end{figure}
+Galois connection also allows us to define \textit{soundness} and \textit{completeness} dually (via abstract values instead of concrete values). Moreover, it also defines \textit{abstract operation} in a precise way as shown in \ref{sec:operations}.
 
 \subsection{Abstract operations}\label{sec:operations}
 
-As stated in the introduction, abstract operation (sometimes referred as \textit{abstract transformers}) enable to approximate results of transformations defined in programs. To preserve soundness of abstract interpretation, abstract operations also has to be \textit{sound approximation}:
+As stated in the introduction, abstract operation (sometimes referred as \textit{abstract transformers}) enable to approximate results of transformations defined in programs.
 
-\begin{definition}
-For any concrete $n$-ary primitive $F: D^n \to D$, in case of Galois connection a ``best'' possible abstraction $F_{D^\#}$ is defined: \cite{mine-AIAA10}
+In case of Galois connection, abstract operations are precisely defined, because we can exploit properties of abstraction and concretization functions.
 
-\[
-  F_{D^\#} \triangleq \alpha_{D^\#} \circ F \circ \gamma_{D^\#}
-\]
+\begin{definition}\label{def:operation-galois}
+  For any concrete $n$-ary primitive $F: C^n \to C$, where $C \in D$, abstract operation $F_{D^\#}$ is defined: \cite{mine-AIAA10}
 
-Otherwise, $F_{D^\#}$ over-approximates $F$. Therefore, we require $F_{D^\#}$ to be a sound abstraction: \cite{CousotEtAl06-ASIAN}
+  \[
+    F_{D^\#} \triangleq \alpha_{D^\#} \circ F \circ \gamma_{D^\#}
+  \]
 
-\[
-\forall a_i \in D^\#: F_{D^\#}((\gamma_{D^\#}(a_i))_{1 \le i \le n}) \subseteq \gamma_{D^\#}(F((a_i)_{1 \le i \le n}))
-\]
-
+  Equivalently:
+  \[
+    F_{D^\#}(a_1,..., a_i, ..., a_n) =  \alpha_{D^\#}(\{F(c_1,..., c_i, ..., c_n) | 1 \le i \le n, c_i \in \gamma_{D^\#}(a_i)\})
+  \]
 \end{definition}
 
-\begin{exmp}[Addition, Integer Interval Domain\cite{mine-WING12}]
+Intuitively, abstraction of operation is defined as the abstraction of a set, which contains results of all possible applications of function $F$ on concretizations of abstract arguments.
+
+If the abstraction is not defined via Galois connection, the general approach is to over-approximate results of $F$. Therefore, we require $F_{D^\#}$ to be a sound abstraction \cite{CousotEtAl06-ASIAN}:
+
+\[
+  \forall a_i \in D^\#: F_{D^\#}((\gamma_{D^\#}(a_i))_{1 \le i \le n}) \subseteq \gamma_{D^\#}(F((a_i)_{1 \le i \le n}))
+\]
+
+Intuitively, no concrete case is omitted by abstract operation.
+
+To demonstrate a particular abstract operation, we will define abstraction of integer addition using the integer interval domain:
+
+\begin{definition}
+  Let $F$ be integral addition, thus function of type $F: \mathbb Z \times \mathbb Z \to \mathbb Z$. The corresponding abstract operation $F_{D^\#}: D^\# \times D^\# \to D^\#$ in the integer interval domain is defined as \cite{mine-WING12}:
   \begin{align*}
-    &D = \mathcal P(\mathbb Z)\\
-    &D^\# = \{[l,h] | l,h \in \mathbb{Z} \cup \{\pm\infty\}\}\\
-    &F: D \times D \to D\\
-    &F(A,B) \triangleq \{a+b | a \in A, b \in B \}\\
-    &F_{D^\#}: D^\# \times D^\# \to D^\#\\
-    &F_{D^\#}([l_1, h_1], [l_2, h_2]) \triangleq [l_1 + l_2, h_1 + h_2]\\
-    &F(\{1,2,3\}, \{0,10\}) = \{1,2,3,11,12,13\}\\
-    &F_{D^\#}([1,3], [0,10]) = [1,13]
+    F_{D^\#}([l_1, h_1], [l_2, h_2]) &\triangleq \alpha_{D^\#}\left( v_1 + v_2 | v_1 \in \gamma_{D^\#}([l_1, h_1]), v_2 \in \gamma_{D^\#}([l_2, h_2]) \right)\\
+    &\triangleq [l_1 + l_2, h_1 + h_2]
+  \end{align*}
+\end{definition}
+
+Thanks to Galois connection, integer addition can be defined in the way indicated in definition \ref{def:operation-galois} -- we sum every pair of concrete values from the first and the second interval and then we apply abstraction function on the set of results.
+
+It can be shown, that the procedure described is equivalent to an interval with lower and upper bounds corresponding to sum of lower bounds of the input intervals, respectively sum of upper bounds of the input intervals, as demonstrated by the following example:
+
+\begin{exmp}
+  \begin{align*}
+    F_{D^\#}([1,1], [2,2]) &= [3,3]\\
+    F_{D^\#}([1,3], [0,10]) &= [1,13]
   \end{align*}
 \end{exmp}
+
+The first example shows sum of two intervals representing only one concrete values, which result is obvious. The latter example demonstrates a sum of two non-trivial intervals and it can be seen that the result interval is computed as sum of lower and upper bounds of the input intervals, respectively.
 
 \chapter{Reduced product}
 
