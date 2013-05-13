@@ -601,7 +601,7 @@ The first example shows sum of two intervals representing only one concrete valu
 
 \chapter{Reduced product}\label{ch:reduced-product}
 
-As demonstrated in example in section \ref{sec:example}, a single abstract domain may not be able to accurately cover all possible abstract operations. To solve this issue, abstract interpretation provides two options:
+As demonstrated in example in the section \ref{sec:example}, a single abstract domain may not be able to accurately cover all possible abstract operations. To solve this issue, abstract interpretation provides two options:
 
 \paragraph{One universal abstract domain}
 Deploying one universal abstract domain requires no modification to abstract interpretation defined in previous chapters, but design of such universal abstract domain has shown as very difficult task, which may not be feasible or even possible.
@@ -615,7 +615,7 @@ In this thesis we describe the second approach, because of its advantages:
 
 When designing a new abstract domain, this approach allows us to focus on the core functionality of the domain and does not burden us with necessity of implementing all possible abstract operations in accurate manner, which may not be possible or feasible.
 
-But it ultimately leads to the need for inter-domain accuracy refinements, which is the topic of this chapter. This chapter establishes \textit{domain product} in section \ref{sec:domain-product}, which is later in section \ref{sec:reduced-cardinality-product} extended into \textit{reduced cardinality product}.
+But it ultimately leads to the need for inter-domain accuracy refinements, which is the topic of this chapter. This chapter establishes \textit{domain product} in the section \ref{sec:domain-product}, which is later in the section \ref{sec:reduced-cardinality-product} extended into \textit{reduced cardinality product}.
 
 \section{Domain product}\label{sec:domain-product}
 % \begin{itemize}
@@ -777,14 +777,14 @@ Implementation of the described process including the incorporated entities is d
 
 \subsection{Container}
 
-The container represents \textit{domain product} (defined in section \ref{sec:domain-product}). To remind, domain products serves as an encapsulation for multiple abstract values representing the same program variable. And similarly is defined the first container's responsibility:
+The container represents \textit{domain product} (defined in the section \ref{sec:domain-product}). To remind, domain products serves as an encapsulation for multiple abstract values representing the same program variable. And similarly is defined the first container's responsibility:
 
 \paragraph{Encapsulation}
 As the name suggests, the container has to encapsulate the contained abstract values, which means it stores the contained abstract values and from outside it acts as a single abstract value. If an abstract operation is issued, the container propagates the call to all contained abstract values component-wisely, thus emulating separate analyses of the program via different abstract domains.
 
 \vspace{1\baselineskip} % TODO
 
-Also the container has to fulfil a part of the \textit{reduced product} (defined in section \ref{sec:reduced-cardinality-product}) over-approximation role -- therefore the following responsibility has to be implemented:
+Also the container has to fulfil a part of the \textit{reduced product} (defined in the section \ref{sec:reduced-cardinality-product}) over-approximation role -- therefore the following responsibility has to be implemented:
 
 \paragraph{Inter-domain communication execution}
 The container is required to initiate, manage and terminate the process of inter-domain communication. This involves invocation of message production \textit{in predefined order}, which is important, because the reduction approximation is not commutative operation, thus the result depends on order of execution.
@@ -836,28 +836,60 @@ But under this assumption, it can be intuitively seen that the algorithm sequent
 \paragraph{Termination}
 As the number of contained domains is always finite and the number of repetitions is always fixed before executing the analysis, the proof of termination is trivial.
 
-\paragraph{Implementation} The implementation of the previously described features is provided by \texttt{ProductVector} class. Precisely contained abstract values are stored in a member variable \texttt{mValues}, which is an instance of  linked list \texttt{std::vector}. The order of linked list elements defines the order of message production and consumption.
+\paragraph{Implementation} The implementation of the previously described features is provided by \texttt{Product::Vector} class. Precisely contained abstract values are stored in a member variable \texttt{mValues}, which is an instance of  linked list \texttt{std::vector}. The order of linked list elements defines the order of message production and consumption.
 
 Particularly the inter-domain communication is initiated in member function \texttt{collaborate}, which iterates through \texttt{mValues} list while invocating message production and consumption. This function also manages combining of previously transmitted messages with the current messages and controls the termination of communication.
 
 All other member function serve as a proxy to propagate abstract functions calls to all contained abstract values.
 
 \subsection{Messages}
-\begin{itemize}
-  \item Kind of messages
-  \item Meet
-\end{itemize}
 
-\subsection{Extract and Refine operations}
-\begin{itemize}
-  \item Design of extract/refine operations
-\end{itemize}
+The message entity mediates the information exchange between abstract values. While it mainly serves as an information carrier, it has also two responsibilities:
 
-Extract operation applied on a given abstract value results into message containing refinement information.
+\paragraph{Modularity support}
+In order to allow future expansion of reduced product to new abstract domains, the message has to provide interface, which permits simple addition of carried information without necessity to modify other parts of the abstract interpreter.
 
-Refine operation attempts to improve accuracy of abstract value using refinement information from refinement message.
+This issue addressed by splitting contained information into related chunks, which are managed separately, in out terminology we call these chunks \textit{message field}. An example of message field is given in the section \ref{sec:integer-reduced-product}
 
-\section{Integer reduced product}
+\paragraph{Combination of messages}
+As the container spans the message scope to all subsequent message transmissions, it is necessary to provide support for merging the previous message with the current message.
+
+Intuitively the semantics of merging two messages is to combine the contained refinement information in the way the result might provide better accuracy improvement than any of the two original messages separately. Thus the merge operation corresponds to the intersection of sets of concrete values represented by the message.
+
+It is important to keep in mind this property when designing new \textit{message fields}
+
+\paragraph{Implementation}
+The implementation is partitioned between two classes: \texttt{Product::Message} and \texttt{Product::MessageField}.
+
+\texttt{Product::Message} class defines a carrier for \textit{message fields} as member variable \texttt{mFields}, which is an instance of hashmap \texttt{std::map} -- the keys of this hashmaps represents type of message field, while the values are the particular message fields. Due to the usage of hashmap, only one instance of a particular message field type is allowed.
+
+This class also defines member function \texttt{meet}, which takes another instance of this class as a parameter and performs combination of these two messages in the sense described above using member function \texttt{meet} of contained instances of \texttt{Product::MessageField}.
+
+\texttt{Product::MessageField} class provides interface for implementing specific \textit{message fields}, which carry refinement information from one abstract value to another. The interface implementation of member function \texttt{meet}, which takes another instance of this class and performs combination of these two message fields. An example of message field can be found in the section \ref{sec:integer-reduced-product}.
+
+\subsection{Extract and refine operations}
+
+Extract and refine operations are inseparable part of reduced product implementation, because this is the place, where the actual accuracy refinements happen.
+
+Both operations act as sockets exchanging information between two domains, where the extract operation represents the output socket while the refine operation stands for the input socket.
+
+The basic idea is to synthesize useful information about the current abstract value and later use this information to improve accuracy of another domain. The most important thing to keep in mind when designing extract and refine operations is that the exchanged information has to \textit{preserve soundness of approximation}. Otherwise refinements using this information might break the correctness property of the analysis.
+
+\paragraph{Extract operation}
+Extract operation applied on a given abstract value results into message containing refinement information. The type of contained information may wary from one to another abstract domain as it highly depends on the property the domain is exploiting to provide abstraction.
+
+An example is provided in the section \ref{sec:integer-reduced-product}.
+
+\paragraph{Refine operation}
+Refine operation attempts to improve accuracy of abstract value using refinement information from the received message. Again the degree of accuracy improvement highly depends on other domains contained in the container, respectively on types and content of received messages.
+
+A significant refinement can occur, e.g. when the previously executed abstract operation was inaccurately over-approximated and the refinement operation was able to at least partially reconstruct the current abstract value.
+
+However, an occurrence of no accuracy improvements is also possible, especially in the cases when the current abstract values was the only abstract value able to accurately approximate an abstract operation or the definition of the execution order prevented the current abstract value from receiving any messages.
+
+An example can be found again in the section \ref{sec:integer-reduced-product}.
+
+\section{Integer reduced product}\label{sec:integer-reduced-product}
 \begin{itemize}
   \item Walkthrough of Integer domain RP implementation
 \end{itemize}
