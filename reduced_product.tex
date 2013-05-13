@@ -743,7 +743,7 @@ Abstract interpretation is involved from step 3 to step 5, particularly \textit{
 
 \section{Framework of reduced product in \textsc{Canal}}
 
-This section describes implementation of \textit{reduced product} based on theory introduced in chapter \ref{ch:reduced-product}. To remind, the target of reduced product is to improve accuracy of contained abstract values without changing its concrete semantics -- the result of concretization function.
+This section describes implementation of \textit{reduced product} based on theory introduced in chapter \ref{ch:reduced-product}. To remind, the target of reduced product is to improve accuracy of contained abstract values without changing its concrete semantics -- the result of concretization function. These accuracy improvements result in more accurate results of abstract operations, thus reducing the number of false positives and making the whole analysis more accurate.
 
 Precisely this implementation is over-approximation of reduced product, because the most precise implementation of reduced product may be very hard if unfeasible. Also the most precise implementation would put constraints on modularity of the whole abstract interpretation framework, thus making its design and implementation difficult.
 
@@ -759,19 +759,88 @@ Communication framework over-approximating reduced product consists of the follo
   \item[Execution plan] defines process of inter-domain information exchange
 \end{description}
 
-When designing implementation, the functionality of communication framework was projected into existing OOP structure of \textsc{Canal} project and resulted into the following entities with specified responsibilities:
+When designing implementation, the functionality of communication framework was projected into existing OOP structure of \textsc{Canal} project and resulted into the following entities with the listed responsibilities:
 
 \begin{description}
-  \item[Container] provides encapsulation (domain product) and defines order of execution of message production and consumption (execution plan)
-  \item[Messages] describe format of exchanged information
-  \item[Execution plan] defines process of inter-domain information exchange
+  \item[Container] provides encapsulation (\textit{domain product}) and defines execution order of message production and consumption (\textit{execution plan})
+  \item[Messages] describe format of exchanged information (\textit{communication protocol})
+  \item[Extract and Refine operations] define per-domain operations for message production and consumption and accuracy refinements (\textit{communication protocol})
 \end{description}
 
+At the beginning of analysis, for each program variable an instance of \textit{container} is initialized and filled with abstract values corresponding to the type of the variable. Since then, the container is treated by analysis as a single abstract value.
+
+During the analysis of a given, all abstract operations applied on the container are passed component-wisely to the contained abstract values and after abstract operation application, the reduction phase is initiated.
+
+Reduction phase is managed by container and depends on its internal structure. At first a particular abstract value is chosen from the container's content and asked to extract refinement information -- produce a message. Then this message is passed to the next abstract value, which refines itself using information from the message, produces a new message and the procedure is repeated until all contained abstract values had chance to refine themselves and influence accuracy of the other contained abstract values.
+
+Implementation of the described process including the incorporated entities is described in the following sections.
+
 \subsection{Container}
-\begin{itemize}
-  \item Vector, Tree
-  \item Cons and pros
-\end{itemize}
+
+The container represents \textit{domain product} (defined in section \ref{sec:domain-product}). To remind, domain products serves as an encapsulation for multiple abstract values representing the same program variable. And similarly is defined the first container's responsibility:
+
+\paragraph{Encapsulation}
+As the name suggests, the container has to encapsulate the contained abstract values, which means it stores the contained abstract values and from outside it acts as a single abstract value. If an abstract operation is issued, the container propagates the call to all contained abstract values component-wisely, thus emulating separate analyses of the program via different abstract domains.
+
+\vspace{1\baselineskip} % TODO
+
+Also the container has to fulfil a part of the \textit{reduced product} (defined in section \ref{sec:reduced-cardinality-product}) over-approximation role -- therefore the following responsibility has to be implemented:
+
+\paragraph{Inter-domain communication execution}
+The container is required to initiate, manage and terminate the process of inter-domain communication. This involves invocation of message production \textit{in predefined order}, which is important, because the reduction approximation is not commutative operation, thus the result depends on order of execution.
+
+Besides message production, it also controls message routing and message consumption invocation. The main aspect of message routing and consumption is the \textit{internal structure} of domain product, which determines the scope of message (recipients) and the order of reception -- the basic approach is to define a fixed order of contained abstract values and let all already produced messages to be consumed by all subsequent abstract values.
+
+The whole process is terminated after a \textit{certain number of steps} depending on the number of contained abstract values. This number is chosen so as to allow message exchange between all contained abstract values.
+
+\vspace{1\baselineskip} % TODO
+
+The following diagrams shows the process of inter-domain communication:
+
+\begin{figure}[ht!]
+  \centering
+  \begin {tikzpicture}
+    [value/.style={rectangle,rounded corners,draw=black,thick,text width=6.5em,text centered},
+    msg/.style={->,>=stealth,thick,shorten <=5pt,shorten >=5pt,auto}]
+
+    \node[value] (interval) { Interval\\ $[0,5]$ };
+    \node[value,right=of interval] (set) { Set\\ $\{0,3,5\}$ };
+    \node[value,right=of set] (bitfield) { Bitfield\\ $\mathtt{0b000000TT1}$ };
+
+    \path
+      (interval) edge[msg,bend left=45]           node {$a$}               (set)
+      (set)      edge[msg,bend left=45]           node {$a \cap b$}        (bitfield)
+      (bitfield) edge[msg,->,bend left=45,dashed] node {$a \cap b \cap c$} (interval);
+  \end {tikzpicture}
+  \caption{Inter-domain communication}
+  \label{fig:communication}
+\end{figure}
+
+The diagram \ref{fig:communication} demonstrates inter-domain communication inside of a container containing three abstract values. The communication is initiated by asking the \textit{interval} abstract value to produce a message $a$, which is routed to the \textit{set} abstract value. The \textit{set} consumes message $a$, while using the received information to improve its own accuracy.
+
+Then it produces a new message $b$ and sends it combined with the message $a$ to the next abstract value. This procedure is repeated again, this time for the \textit{bitfield} abstract value.
+
+The dashed edge connecting the last and the first abstract value expresses that the communication might be terminated at that point or the whole procedure might be repeated taking again all previously produced messages into the account.
+
+\paragraph{Complexity} Intuitively the number of transmitted messages linearly depends on the number of contained abstract values $d$ and on the number of repetitions $r$.
+
+\[
+\mathcal O(d \cdot r)
+\]
+
+\paragraph{Partial correctness}
+Partial correctness depends on the implementation of per-domain refinement and extract operation correctness.
+
+But under this assumption, it can be intuitively seen that the algorithm sequentially propagates refinement information to all contained domain allowing them to refine itself, thus over-approximating \textit{reduced product}.
+
+\paragraph{Termination}
+As the number of contained domains is always finite and the number of repetitions is always fixed before executing the analysis, the proof of termination is trivial.
+
+\paragraph{Implementation} The implementation of the previously described features is provided by \texttt{ProductVector} class. Precisely contained abstract values are stored in a member variable \texttt{mValues}, which is an instance of  linked list \texttt{std::vector}. The order of linked list elements defines the order of message production and consumption.
+
+Particularly the inter-domain communication is initiated in member function \texttt{collaborate}, which iterates through \texttt{mValues} list while invocating message production and consumption. This function also manages combining of previously transmitted messages with the current messages and controls the termination of communication.
+
+All other member function serve as a proxy to propagate abstract functions calls to all contained abstract values.
 
 \subsection{Messages}
 \begin{itemize}
