@@ -889,10 +889,50 @@ However, an occurrence of no accuracy improvements is also possible, especially 
 
 An example can be found again in the section \ref{sec:integer-reduced-product}.
 
+\paragraph{Implementation}
+Interface for implementing \textit{extract} and \textit{refine} functions is defined in \texttt{Domain} class as member functions \texttt{extract} and \texttt{refine}. Both of them take an instance of \texttt{Product::Message} as the only argument and these function are expected to set respectively read refinement informations from the passed message.
+
 \section{Integer reduced product}\label{sec:integer-reduced-product}
-\begin{itemize}
-  \item Walkthrough of Integer domain RP implementation
-\end{itemize}
+
+This section provides practical information about deploying \textit{reduced product} on existing abstract domains. Moreover, it might serve as a part of a guide covering topics on development of \textsc{Canal} project.
+
+At the time of writing this thesis, \textsc{Canal} has 3 distinct abstract domains designed for analysing properties of integer variables:
+
+\begin{description}
+  \item[Interval] corresponding to the integer interval domain introduced in the chapter \ref{ch:abstract-interpretation}
+  \item[Set] for precise representation of small sets of concrete values
+  \item[Bitfield] covering binary-level semantics of integers
+\end{description}
+
+As it can be seen, these three abstract domains exploit almost orthogonal concepts of abstraction, thus making them ideal for usage in reduced product, because they provide mutually complementary functionality.
+
+\subsection{\texttt{MinMax} message field design}
+
+The first decision is to choose a suitable refinement information. The requirements for refinement information to be successful are the following:
+
+\begin{description}
+  \item[Easily extractable] obviously, if we are not able to extract the refinement information, we cannot produce a message, which is the primary condition for successful accuracy improvements
+  \item[Easily refineable] having a very accurate refinement information without a possibility to apply them is also useless for accuracy improvements
+  \item[Covering an inaccurate operation] providing refinement information, which are less accurate than the actual abstract value also leads to no accuracy improvements
+\end{description}
+
+Obviously, the minimal number of abstract domains which can be refined is 2 -- we need to have one abstract domain suitable for extraction of refinement information and another abstract domain, which is able to take the advantage of refinement information and improve its accuracy.
+
+In our case we have chosen to implement \texttt{MinMax} message field, which basically is the integer interval domain. This choice allowed us to exchange information about lower and upper bounds between all three integer domains implemented in \textsc{Canal}.
+
+\paragraph{Implementation}
+Implementation can be found in class \texttt{Field::MinMax}, which is implementing the interface defined by \texttt{Product::MessageField}. The implementation incorporates an instance of the integer interval domain \texttt{Integer::Interval} which is stored in member variable \texttt{mInterval}.
+
+The member function \texttt{meet} exploits the fact that this operation is already defined in \texttt{Integer::Interval} and uses this implementation -- intuitively \textit{meet} operation corresponds to the intersection of two intervals. This fact also transfers a burden of the correctness proof to the integer interval domain.
+
+\subsection{Extract and refine implementation}
+
+Implementation of these two methods on all three integer domains is fairly straightforward thanks to already implemented methods present on all related domains.
+
+To remind, both two operations has to keep the property of soundness, otherwise the soundness of the whole analysis is lost.
+
+\paragraph{Implementation}
+Implementation of \texttt{extract} and \texttt{refine} member functions can be found in each of these three classes: \texttt{Integer::Interval}, \texttt{Integer::Set} and \texttt{Integer::Bitfield}. All of listed function are exploiting already defined member functions \texttt{signedMin}, \texttt{signedMax}, etc. for \textit{extract operation} and \texttt{fromInterval} for \textit{refine operation}.
 
 \chapter{\textsc{GNU Core Utilities} analysis}
 
