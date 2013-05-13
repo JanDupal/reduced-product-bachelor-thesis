@@ -937,12 +937,14 @@ Implementation of \texttt{extract} and \texttt{refine} member functions can be f
 \chapter{\textsc{GNU Core Utilities} analysis}
 
 \chapter{Conclusion}
-\section{Impact on program analysis}
-\section{Future work}
-\begin{itemize}
-  \item Pre-condition refinements
-  \item Task-parallelism, topological order
-\end{itemize}
+
+This thesis has briefly described the basic principles of \textit{abstract interpretation} and theory behind \textit{reduced product of abstract domain} while providing examples to help easier understanding of defined terms.
+
+The second part of this paper discusses design, limitations and implementation of \textit{reduced product approximation} to \textsc{Canal} project. The usage of the defined framework is shown on integration with existing abstract domains and the corresponding provides helpful guide for the future application of reduced product to other abstract values.
+
+The last chapter demonstrates the results of reduced product deployment on analysis of a set of real-life programs from \textsc{Gnu Coreutils} project.
+
+The future work may include include optimized inter-domain communication framework, if the number of abstract domains \textsc{Canal} exceeds a certain volume. This would comprise improvements in the form of \textit{tree internal structure} or support for \textit{precondition refinements}. Also if encountered a specific pattern causing a loss of accuracy, new refinement messages may be designed and implemented to address this issue.
 
 \bibliographystyle{plain}
 \bibliography{reduced_product}
