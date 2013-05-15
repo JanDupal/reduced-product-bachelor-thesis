@@ -74,60 +74,24 @@ static analysis, abstract interpretation, reduced product, canal
 
 \MainMatter
 \chapter{Introduction}
-\begin{itemize}
-  \item program analysis (why?)
-  \item static/dynamic
-\end{itemize}
+% \begin{itemize}
+%   \item program analysis (why?)
+%   \item static/dynamic
+% \end{itemize}
 
-Program analysis is a field of Computer Science, which examines behaviour of programs.
+The more software we employ into the products we use on daily basis, the more we become dependent on the \textit{reliability} of these products. Reliability represents how much we trust in the fact that a given product will not fail in fulfilling its purpose.
 
-\paragraph{Properties of programs}
-The behaviour can be described by two distinct properties: \textit{correctness} and \textit{finiteness}.
+The well known saying, that \textit{a chain is only as strong as its weakest link}, is in the case of products incorporating software doubly true -- no matter how well the product is physically manufactured, if the software fails, the whole product fails.
 
-Intuitively correctness expresses whether the program gives the same results as was intended. Formally...
+The severity of a potential failure may span from inconvenience in case of non-critical appliances (an inoperable coffee machine) to very serious aftermaths -- life-threatening and costly malfunctions of software used for example in health care or aerospace industry. Naturally, the most effective way to reduce impacts of software failures is to \textit{prevent their occurrences} preferably right at their origins -- in source codes of computer programs.
 
-Finiteness gives guarantee that program will finish it's computation in finite number of steps [citation needed].
+Especially in mission critical applications, a single unnoticed software bug might destroy a value of unimaginable magnitude. Therefore it is logical to demand tools to help proving the lack of bugs.
 
-\paragraph{Program analysis approaches}
-In terms of approach program analysis is divided into two categories: dynamic and static analysis.
+\textit{Program analysis} is a field of computer science, which examines behaviour of programs. The behaviour of programs can be analysed in many ways, one of them is \textit{static analysis} via \textit{abstract interpretation}. In this context the word static means ``without executing the program'', while abstract interpretation represents a technique of approximating program values and operations using abstractions as a base concept.
 
-As the name suggests \textit{dynamic analysis} is performed on run-time. On the other hand \textit{static analysis} performed without actually executing the program. Obviously both approaches have advantages and disadvantages.
+The goal of this thesis is to design and implement a \textit{reduced product of abstract domains} framework for open-source abstract interpretation tool \textsc{Canal}. The framework improves accuracy of analysis by allowing information exchange between contained \textit{abstract domains}.
 
-The dynamic analysis is capable of giving very precise results on given program input, where static analysis is input-independent, but it's results are more general, therefore less accurate \cite{CousotEtAl06-ASIAN}.
-
-\section{Static program analysis}
-\begin{itemize}
-  \item utilization (runtime errors etc.)
-  \item cons and pros
-\end{itemize}
-
-\section{Abstract interpretation}
-\begin{itemize}
-  \item basic principles
-  \item concrete value - abstract value
-\end{itemize}
-
-When manually analysing behaviour of a given program by going through its source code, we often try to enumerate all possible values of a particular program variable. The knowledge of all possible values of the variable allow us to precisely reason about the results of expression incorporating that variable.
-
-To correctly infer results of an expression, depending on cardinality of the expression, we take all possible combinations of input values and apply the expression. The result of our derivation is again a set of all possible values.
-
-However, sometimes (e.g. in case of loops) the set of all possible values might be too large to memorize, so we have to resort to represent the set in another way. One option is to approximate the set as a certain property which is shared among all elements of the set. For example, a set of integers $\{1, 5, 9, 13, 17\}$ can be represented as \textit{odd integers}.
-
-Approach to expressions evaluation is preserved -- first we \textit{concretize} the property representing the set of possible values, then we apply all possible combination of input values, resulting into a set of all possible results, which we \textit{abstract} to a property of the set.
-
-Unconsciously we were using the concepts of \textit{abstract interpretation}.
-
-\section{Reduced product}
-\begin{itemize}
-  \item References to chapters (theory)
-\end{itemize}
-
-\section{Project \textsc{Canal}}
-\begin{itemize}
-  \item Project goals
-  \item References to chapters (implementation)
-\end{itemize}
-
+The \hyperref[ch:abstract-interpretation]{first chapter} summarizes a theoretical framework of \textit{abstract interpretation} in context of static analysis to provide a solid foundation to introduce \texttt{reduced product} in the \hyperref[ch:reduced-product]{second chapter}. The \hyperref[ch:implementation]{third chapter} discusses the actual design and describes the implementation in \textsc{Canal}, which effectiveness and efficiency is measured in the \hyperref[ch:measurements]{last chapter} on a set of programs from \textsc{GNU Coreutils}.
 
 \chapter{Abstract interpretation}\label{ch:abstract-interpretation}
 % \begin{itemize}
@@ -699,7 +663,7 @@ The previous example demonstrates principles of reduced product -- while its con
 
 However, implementation of the most precise reduce product,as defined here, can hardly be modular and feasible \cite{CousotCousotMauborgne-FoSSaCS-11}, thus in practice only over-approximations are used. One approach to reduced product approximation is described in the following chapter.
 
-\chapter{Implementation in \textsc{Canal}}
+\chapter{Implementation in \textsc{Canal}}\label{ch:implementation}
 % \begin{itemize}
 %   \item Overview of Canal
 %   \item Overview of RP implementation
@@ -932,7 +896,7 @@ To remind, both two operations has to keep the property of soundness, otherwise 
 \paragraph{Implementation}
 Implementation of \texttt{extract} and \texttt{refine} member functions can be found in each of these three classes: \texttt{Integer::Interval}, \texttt{Integer::Set} and \texttt{Integer::Bitfield}. All of listed function are exploiting already defined member functions \texttt{signedMin}, \texttt{signedMax}, etc. for \textit{extract operation} and \texttt{fromInterval} for \textit{refine operation}.
 
-\chapter{\textsc{GNU Core Utilities} analysis}
+\chapter{\textsc{GNU Core Utilities} analysis}\label{ch:measurements}
 
 \chapter{Conclusion}
 
