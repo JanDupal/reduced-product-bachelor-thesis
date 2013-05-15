@@ -63,7 +63,7 @@ Canal is a static analysis tool designed to analyse behaviour of application pro
 
 Reduced product of abstract domains is a mechanism enabling an incremental evolution of abstract interpreter by introducing simple abstract domains one by one, and supporting program-specific domains. The reduced product itself is an abstract domain, and its operations (transformers) use the transformers of underlying domains component-wise. Underlying domains can improve their precision by exchanging information.
 
-The goal of this thesis is to design and develop a generic reduced product in the context of Canal. The reduced product must provide means to exchange information between the underlying domains while keeping the domains themselves independent from each other. The impact of reduced product of integer intervals, bit field and set abstract domains on the analysis of numeric programs should be measured.
+The goal of this thesis was to design and develop a generic reduced product in the context of Canal. The reduced product provides means to exchange information between the underlying domains while keeping the domains themselves independent from each other. The impact of reduced product of integer intervals, bit field and set abstract domains on the analysis of programs is measured.
 \end{ThesisAbstract}
 
 \begin{ThesisKeyWords}
@@ -155,13 +155,13 @@ The term abstract interpretation as described in \cite{CousotCousot77-1}:
 In other words, the goal of program analysis using abstract interpretation is to provide information about program computation. The tool it uses to reach the goal is \textit{abstraction of values and operations}.
 
 \paragraph{Concrete value}
-A concrete value stands for a program value. E.g. number 5 is a concrete value.
+A concrete value stands for a program value during execution. E.g. number 5 is a concrete value of an integer variable in some execution of a program.
 
 \paragraph{Abstract value}
 An abstract value represents a set of concrete values of a given property (e.g. parity), depending on particular definition. This abstractions allows us to approximate results of concrete executions.
 
 \paragraph{Abstract operations}
-To be able to apply operation (e.g. sum of integers) on abstract values, it is necessary to define abstract operations. Abstract operations are used to transform input abstract values to output abstract values. And to be semantically correct, abstract operation must preserve the same behaviour as its concrete model regarding the property used to abstract values.
+To be able to apply operation (e.g. sum of integers) on abstract values, it is necessary to define abstract operations. Abstract operations are used to transform input abstract values to output abstract values. To be semantically correct, abstract operation must preserve the same behaviour as its concrete model regarding the property used to abstract values.
 
 \vspace{1\baselineskip} % TODO
 
@@ -174,7 +174,7 @@ To give a brief example of abstract values and operations consider the following
 
 \[ -1515 \cdot 17 \]
 
-To describe this concrete computation as an abstract computation, first we need to define values: symbols $(+)$ and $(-)$ to represent sign of concrete integral value and symbol $(\pm)$ for unknown sign.
+To describe this concrete computation as an abstract computation, first we need to define abstract values: symbols $(+)$ and $(-)$ to represent sign of concrete integral value and symbol $(\pm)$ for unknown sign.
 
 Using this abstract values the previous computation corresponds to the following abstract computation:
 
@@ -269,7 +269,7 @@ Note that this particular abstraction may include in the approximation some exce
 \subsection{Concretization function}
 Dually to abstraction function, \textit{concretization function} transforms an abstract value into a set of concrete values, which are represented by the given abstract value.
 
-Importance of this function lies in the fact, that it defines a concrete semantics of abstract values -- it enables us to translate results of abstract interpretation into the universe of abstract values. And last but not least, together with abstract functions, it defines almost all subsequent terms of abstract interpretation.
+Importance of this function lies in the fact, that it defines a concrete semantics of abstract values -- it enables us to translate results of abstract interpretation into the universe of concrete values. Together with abstract functions, it defines almost all subsequent terms of abstract interpretation.
 
 A \textit{concretization function} is a function of type:
 
@@ -611,11 +611,9 @@ The other choice is to modify abstract interpretation framework to allow paralle
 
 \vspace{1.5\baselineskip} % TODO
 
-In this thesis we describe the second approach, because of its advantages:
+In this thesis we describe the second approach, because of its advantages. When designing a new abstract domain, this approach allows us to focus on the core functionality of the domain and does not burden us with necessity of implementing all possible abstract operations in accurate manner, which may not be possible or feasible.
 
-When designing a new abstract domain, this approach allows us to focus on the core functionality of the domain and does not burden us with necessity of implementing all possible abstract operations in accurate manner, which may not be possible or feasible.
-
-But it ultimately leads to the need for inter-domain accuracy refinements, which is the topic of this chapter. This chapter establishes \textit{domain product} in the section \ref{sec:domain-product}, which is later in the section \ref{sec:reduced-cardinality-product} extended into \textit{reduced cardinality product}.
+However, the use of multiple specialized domains ultimately leads to the need for inter-domain accuracy refinements, which is the topic of this chapter. This chapter establishes \textit{domain product} in the section \ref{sec:domain-product}, which is later in the section \ref{sec:reduced-cardinality-product} extended into \textit{reduced cardinality product}.
 
 \section{Domain product}\label{sec:domain-product}
 % \begin{itemize}
@@ -820,9 +818,9 @@ The diagram \ref{fig:communication} demonstrates inter-domain communication insi
 
 Then it produces a new message $b$ and sends it combined with the message $a$ to the next abstract value. This procedure is repeated again, this time for the \textit{bitfield} abstract value.
 
-The dashed edge connecting the last and the first abstract value expresses that the communication might be terminated at that point or the whole procedure might be repeated taking again all previously produced messages into the account.
+The dashed edge connecting the last and the first abstract value expresses that the communication might be terminated at that point or the whole procedure might be repeated again taking all previously produced messages into the account.
 
-\paragraph{Complexity} Intuitively the number of transmitted messages linearly depends on the number of contained abstract values $d$ and on the number of repetitions $r$.
+\paragraph{Complexity} Intuitively the number of transmitted messages linearly depends on the number of contained abstract values $d$ and on the number of repetitions $r$:
 
 \[
 \mathcal O(d \cdot r)
