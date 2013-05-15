@@ -230,11 +230,11 @@ Formal definition of domains used in the \textit{integer interval domain} follow
   \end{align*}
 \end{exmp}
 
-The \textit{domain of concrete values} $D$, in case of integers, is a power set of integers $\mathbb Z$. To remind, a concrete value denotes any program value and their set describes all possible values of a given program value.
+The \textit{domain of concrete values} $D$, in the case of integers, is a power set of integers $\mathbb Z$. To remind, a concrete value denotes any program value and their set describes all possible values of a given program value.
 
 And the \textit{domain of abstract values} $D^\#$ is defined to approximate sets of concrete values from $D$. In this case, it is a set of all pairs $[l, h]$, where $l$ and $h$ are integers or symbols representing positive or negative infinity.
 
-This abstraction was chosen, because it belongs to the basic abstractions used in analysis of numerical computation\cite{mine-AIAA10} and its underlying concepts are easy to understand.
+This abstraction was chosen, because it is useful for many kinds of numerical computation analyses\cite{mine-AIAA10} and its underlying concepts are easy to understand.
 
 By convention, a domain of concrete values will further be denoted as $D$ and a domain of abstract values as $D^\#$ and their elements as $a$ and $C$ respectively.
 
@@ -246,7 +246,7 @@ The correspondence between sets of concrete values and abstract values is establ
 \alpha_{D^\#}\colon D \to D^\#
 \]
 
-The \textit{abstraction function} assigns an abstract value to a given set of concrete values. It belongs to the core concepts of the abstract interpretation, because it provides bridge between a program values and their abstraction -- every program value has to be abstracted before proceeding with abstract interpretation of the program.
+The \textit{abstraction function} assigns an abstract value to a given set of concrete values. It belongs to the core concepts of the abstract interpretation, because it provides a bridge between program values and their abstractions -- every program value has to be abstracted before proceeding with abstract interpretation of the program.
 
 To give a particular \textit{abstraction function}, consider the one used in integer interval domain:
 
@@ -267,9 +267,9 @@ The example demonstrates application of \textit{abstraction function} $\alpha_{D
 Note that this particular abstraction may include in the approximation some excessive concrete values due to its definition utilizing only minimal and maximal element -- this property of abstraction is denoted as \textit{incompleteness} and will be defined later in \ref{ssec:soundness-incompleteness}.
 
 \subsection{Concretization function}
-Dually to abstraction function, \textit{concretization function} transforms an abstract value into a set of concrete values, which are represented by the given abstract value.
+Dually to the abstraction function, \textit{concretization function} transforms an abstract value into a set of concrete values, which are represented by the given abstract value.
 
-Importance of this function lies in the fact, that it defines a concrete semantics of abstract values -- it enables us to translate results of abstract interpretation into the universe of concrete values. Together with abstract functions, it defines almost all subsequent terms of abstract interpretation.
+Importance of this function lies in the fact that it defines a concrete semantics of abstract values -- it enables us to translate results of abstract interpretation into the universe of concrete values. Together with abstract functions, it defines almost all subsequent terms of abstract interpretation.
 
 A \textit{concretization function} is a function of type:
 
@@ -459,7 +459,7 @@ The figure \ref{fig:interval-lattice} show a part of infinite lattice of the int
 If we want to gain informative results via a program analysis, we have to ensure that the analysis is \textit{correct}. Correctness consists of three distinct properties: \textit{soundness}, \textit{completeness} and \textit{termination}.
 
 \paragraph{Soundness}
-Soundness expresses, that a given abstraction do include every case having a particular property, but since it is an over-approximations, some of those cases might not occur in the reality.
+Soundness expresses, that a given abstraction do include every case having a particular property, but since it is an over-approximation, some of those cases might not occur in the reality.
 
 In order to be sound analysis, the abstraction and concretization functions has to satisfy the following requirement \cite{mine-AIAA10}:
 
@@ -597,7 +597,7 @@ It can be shown, that the procedure described is equivalent to an interval with 
   \end{align*}
 \end{exmp}
 
-The first example shows sum of two intervals representing only one concrete values, which result is obvious. The latter example demonstrates a sum of two non-trivial intervals and it can be seen that the result interval is computed as sum of lower and upper bounds of the input intervals, respectively.
+The first example shows sum of two intervals, where each of them represents one concrete value. The latter example demonstrates a sum of two non-trivial intervals and it can be seen that the result interval is computed as sum of lower and upper bounds of the input intervals, respectively.
 
 \chapter{Reduced product}\label{ch:reduced-product}
 
