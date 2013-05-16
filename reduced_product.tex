@@ -33,6 +33,9 @@
 % Interactive references
 \usepackage{hyperref}
 
+% Better tables
+\usepackage{booktabs}
+
 % ToC setup
 \usepackage[nottoc,numbib]{tocbibind}
 \setcounter{tocdepth}{3}
@@ -897,6 +900,36 @@ To remind, both two operations has to keep the property of soundness, otherwise 
 Implementation of \texttt{extract} and \texttt{refine} member functions can be found in each of these three classes: \texttt{Integer::Interval}, \texttt{Integer::Set} and \texttt{Integer::Bitfield}. All of listed function are exploiting already defined member functions \texttt{signedMin}, \texttt{signedMax}, etc. for \textit{extract operation} and \texttt{fromInterval} for \textit{refine operation}.
 
 \chapter{\textsc{GNU Core Utilities} analysis}\label{ch:measurements}
+
+This chapter addresses measuring effectiveness and efficiency of reduced product implementation in \textsc{Canal} project.
+
+The set of test programs was chosen considering the focus of the project -- analysis of real-life source codes. Therefore the impact of implementation is measured on a set of utilities from \textsc{GNU Coreutils} project.
+
+\section{Methodology}
+
+As \textsc{Canal} focuses on the actual analysis rather than on providing meta-information about the analysis, results achieved by \texttt{accuracy()} member function of \texttt{Domain} class might not be easily comparable between programs, thus interpretation of the results may not be clear.
+
+Therefore we have chosen to measure the final impact on the analysis results -- we measure the \textit{fraction of program instructions}, which analysis had been improved by reduced product, against the total number of program instructions. Also the \textit{duration of analysis execution} is measured, because the implementation increases overhead necessary to compute abstract operations.
+
+\section{Results}
+
+The results are arranged in a table, which contains name of program, total number of program instructions, number of improved instructions and durations analysis with and without reduced product enabled.
+
+\begin{table}[ht!]
+  \footnotesize
+  \centering
+  \begin{tabular}{l rrrr rr}
+    program & $t_0$ (s) & $t_1$ (s) & $n$ & $n_i$ & $\frac{t_1}{t_0}$ & $\frac{n_i}{n}$ \\
+    \midrule
+    \texttt{wc} & 34.5 & 61.3 & 825 & 149 & 1.77 &  0.18 \\
+    \texttt{true} & 34.5 & 61.3 & 825 & 149 & 1.77 &  0.18 \\
+    \midrule
+    average & 34.5 & 61.3 & 825 & 149 & 1.77 &  0.18 \\
+  \end{tabular}
+  \caption{Impact of reduced product}
+\end{table}
+
+As you can see, the performance...
 
 \chapter{Conclusion}
 
