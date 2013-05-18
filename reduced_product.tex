@@ -998,4 +998,46 @@ The future work may include optimized inter-domain communication framework, if t
 \bibliographystyle{plain}
 \bibliography{reduced_product}
 
+\appendix
+\chapter{List of files}
+
+This is the list of files affected by the implementation done within this thesis. All listed files can be found on the attached CD.
+
+The core functionality of \textit{reduced product} in implemented in the following files:
+
+\begin{verbatim}
+lib/ProductMessage.cpp
+lib/ProductMessageField.h
+lib/ProductMessage.h
+lib/ProductVector.cpp
+lib/ProductVector.h
+tests/ProductMessageTest.cpp
+tests/ProductVectorTest.cpp
+\end{verbatim}
+
+Integration with the \textit{integer domains} is contained it the following  files:
+
+\begin{verbatim}
+lib/FieldMinMax.cpp
+lib/FieldMinMax.h
+lib/IntegerBitfield.cpp
+lib/IntegerBitfield.h
+lib/IntegerContainer.cpp
+lib/IntegerContainer.h
+lib/IntegerSet.cpp
+lib/IntegerSet.h
+tests/FieldMinMaxTest.cpp
+\end{verbatim}
+
+Auxiliary code was added into the following files:
+
+\begin{verbatim}
+lib/Constructors.cpp
+lib/Constructors.h
+lib/Domain.h
+lib/IntegerUtils.cpp
+lib/IntegerUtils.h
+lib/Operations.cpp
+\end{verbatim}
+
 \end{document}
