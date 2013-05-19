@@ -72,9 +72,9 @@ Also I would like to thank my family for support and my colleagues Tomáš Brukn
 
 \begin{ThesisAbstract}
 
-Abstract interpretation, which is an approach to static program analysis, is prone to \textit{false positive errors} caused by inaccurate approximation of program values. Reduced product of abstract domains provides a mechanism to \textit{improve the overall precision} of abstract analysis by introducing mutual refinements between abstract domains.
+Abstract interpretation, which is an~approach to static program analysis, is prone to \textit{false positive errors} caused by inaccurate approximation of program values. Reduced product of abstract domains provides a~mechanism to \textit{improve the overall precision} of abstract analysis by introducing mutual refinements between abstract domains.
 
-This thesis provides theoretical framework, design and implementation of reduced product in context of \textsc{Canal} project -- an abstract analysis tool focused on the scalability to large programs and proper handling of real-world source code.
+This thesis provides theoretical framework, design and implementation of reduced product in context of \textsc{Canal} project -- an~abstract analysis tool focused on the scalability to large programs and proper handling of real-world source code.
 \end{ThesisAbstract}
 
 \begin{ThesisKeyWords}
@@ -90,19 +90,19 @@ static analysis, abstract interpretation, abstract domains, domain product, redu
 %   \item static/dynamic
 % \end{itemize}
 
-The more software we employ into the products we use on a daily basis, the more we become dependent on the \textit{reliability} of these products. Reliability represents how much we trust in the fact that a given product will not fail in fulfilling its purpose.
+The more software we employ into the products we use on a~daily basis, the more we become dependent on the \textit{reliability} of these products. Reliability represents how much we trust in the fact that a~given product will not fail in fulfilling its purpose.
 
 The well known saying, that \textit{a chain is only as strong as its weakest link}, is in the case of products incorporating software doubly true -- no matter how well the product is physically manufactured, if the software fails, the whole product fails.
 
-The severity of a potential failure may span from inconvenience in case of non-critical appliances (an inoperable coffee machine) to very serious aftermaths -- life-threatening and costly malfunctions of software used for example in health care or aerospace industry. Naturally, the most effective way to reduce impacts of software failures is to \textit{prevent their occurrences} preferably right at their origins -- in source codes of computer programs.
+The severity of a~potential failure may span from inconvenience in case of non-critical appliances (an inoperable coffee machine) to very serious aftermaths -- life-threatening and costly malfunctions of software used for example in health care or aerospace industry. Naturally, the most effective way to reduce impacts of software failures is to \textit{prevent their occurrences} preferably right at their origins -- in source codes of computer programs.
 
-Especially in mission critical applications, a single unnoticed software bug might destroy a value of unimaginable magnitude. Therefore it is logical to demand tools to help proving the lack of bugs.
+Especially in mission critical applications, a~single unnoticed software bug might destroy a~value of unimaginable magnitude. Therefore it is logical to demand tools to help proving the lack of bugs.
 
-\textit{Program analysis} is a field of computer science, which examines behaviour of computer programs. The behaviour of programs can be analysed in many ways, one of them is \textit{static analysis} via \textit{abstract interpretation}. In this context the word static means ``without executing the program'', while abstract interpretation represents a technique of approximating program values and operations using abstractions as a base concept.
+\textit{Program analysis} is a~field of computer science, which examines behaviour of computer programs. The behaviour of programs can be analysed in many ways, one of them is \textit{static analysis} via \textit{abstract interpretation}. In this context the word static means ``without executing the program'', while abstract interpretation represents a~technique of approximating program values and operations using abstractions as a~base concept.
 
-The goal of this thesis is to design and implement a \textit{reduced product of abstract domains} framework for open-source abstract interpretation tool \textsc{Canal}. The framework improves accuracy of analysis by allowing information exchange between contained \textit{abstract domains}.
+The goal of this thesis is to design and implement a~\textit{reduced product of abstract domains} framework for open-source abstract interpretation tool \textsc{Canal}. The framework improves accuracy of analysis by allowing information exchange between contained \textit{abstract domains}.
 
-The \hyperref[ch:abstract-interpretation]{first chapter} summarizes a theoretical framework of \textit{abstract interpretation} in context of static analysis to provide a solid foundation to introduce \texttt{reduced product} in the \hyperref[ch:reduced-product]{second chapter}. The \hyperref[ch:implementation]{third chapter} discusses the actual design and describes the implementation in \textsc{Canal}, which effectiveness and efficiency is measured in the \hyperref[ch:measurements]{last chapter} on a set of programs from \textsc{GNU Coreutils}.
+The \hyperref[ch:abstract-interpretation]{first chapter} summarizes a~theoretical framework of \textit{abstract interpretation} in context of static analysis to provide a~solid foundation to introduce \textit{reduced product} in the \hyperref[ch:reduced-product]{second chapter}. The \hyperref[ch:implementation]{third chapter} discusses the actual design and describes the implementation in \textsc{Canal}, which effectiveness and efficiency is measured in the \hyperref[ch:measurements]{last chapter} on a~set of programs from \textsc{GNU Coreutils}.
 
 \chapter{Abstract interpretation}\label{ch:abstract-interpretation}
 % \begin{itemize}
@@ -113,13 +113,13 @@ The \hyperref[ch:abstract-interpretation]{first chapter} summarizes a theoretica
 %   \item See Astre
 % \end{itemize}
 
-In some cases, a concrete question may not be answered easily. In those cases, we may resort to ask a simpler abstract question that results in an abstract answer.
+In some cases, a~concrete question may not be answered easily. In those cases, we may resort to ask a~simpler abstract question that results in an~abstract answer.
 
 Using this abstract answer we might be able to answer the original question or at least approximate the concrete answer. \cite{CousotCousot04-WCC}
 
 \section{Usage in static analysis}
 
-Analogous approach has shown as successful in static program analysis, where the concrete question is whether a given program is correct, i.e. the proof of the absence of run-time errors, which is proven to be undecidable \cite{mine-AIAA10}. This problem may be circumvented using abstraction to soundly approximate the answer. Therefore it is necessary to formalize those abstraction, which is the goal of \textit{abstract interpretation}.
+Analogous approach has shown as successful in static program analysis, where the concrete question is whether a~given program is correct, i.e. the proof of the absence of run-time errors, which is proven to be undecidable \cite{mine-AIAA10}. This problem may be circumvented using abstraction to soundly approximate the answer. Therefore it is necessary to formalize those abstraction, which is the goal of \textit{abstract interpretation}.
 
 The term abstract interpretation as described in \cite{CousotCousot77-1}:
 
@@ -130,26 +130,26 @@ The term abstract interpretation as described in \cite{CousotCousot77-1}:
 In other words, the goal of program analysis using abstract interpretation is to provide information about program computation. The tool it uses to reach the goal is \textit{abstraction of values and operations}.
 
 \paragraph{Concrete value}
-A concrete value stands for a program value during execution. E.g. number 5 is a concrete value of an integer variable in some execution of a program.
+A concrete value stands for a~program value during execution. E.g. number 5 is a~concrete value of an~integer variable in some execution of a~program.
 
 \paragraph{Abstract value}
-An abstract value represents a set of concrete values of a given property (e.g. parity), depending on particular definition. This abstractions allows us to approximate results of concrete executions.
+An abstract value represents a~set of concrete values of a~given property (e.g. parity), depending on particular definition. This abstractions allows us to approximate results of concrete executions.
 
 \paragraph{Abstract operations}
 To be able to apply operation (e.g. sum of integers) on abstract values, it is necessary to define abstract operations. Abstract operations are used to transform input abstract values to output abstract values. To be semantically correct, abstract operation must preserve the same behaviour as its concrete model regarding the property used to abstract values.
 
 \vspace{1\baselineskip} % TODO
 
-Given a program and the definitions of abstract values and operations, \textit{abstract interpretation} is able to interpret the program using abstract values instead of concrete values. The result of interpretation is information about properties of program values in each of program steps.
+Given a~program and the definitions of abstract values and operations, \textit{abstract interpretation} is able to interpret the program using abstract values instead of concrete values. The result of interpretation is information about properties of program values in each of program steps.
 
 
 \subsection{Example}\label{sec:example}
 
-To give a brief example of abstract values and operations consider the following computation from \cite{CousotCousot77-1}:
+To give a~brief example of abstract values and operations consider the following computation from \cite{CousotCousot77-1}:
 
 \[ -1515 \cdot 17 \]
 
-To describe this concrete computation as an abstract computation, first we need to define abstract values: symbols $(+)$ and $(-)$ to represent sign of concrete integral value and symbol $(\pm)$ for unknown sign.
+To describe this concrete computation as an~abstract computation, first we need to define abstract values: symbols $(+)$ and $(-)$ to represent sign of concrete integral value and symbol $(\pm)$ for unknown sign.
 
 Using this abstract values the previous computation corresponds to the following abstract computation:
 
@@ -165,7 +165,7 @@ However using addition instead of multiplication ($-1515 + 17$) leads to inaccur
 As you can see, the sign of the sum of negative and positive integer might be both $+$ or $-$, depending on which component is larger in absolute value. This unknown result is in our abstract universe expressed as $(\pm)$, generally denoted as $\top$.
 
 \paragraph{Influence of abstraction}
-Also the choice of abstract values affects accuracy of abstract computation. Choosing abstract values as $\Set{(even), (odd), \top}$ to represent parity of integers instead of sign leads to the following results:
+Also the choice of abstract values affects accuracy of abstract computation. Choosing abstract values from a~set $\Set{(even), (odd), \top}$ to represent parity of integers instead of sign leads to the following results:
 
 \[ -(odd) \cdot (odd) \Rightarrow (odd) \cdot (odd) \Rightarrow (odd) \]
 \[ -(odd) + (odd) \Rightarrow (odd) + (odd) \Rightarrow (even) \]
@@ -180,21 +180,21 @@ The lack of $\top$ values in the results means that there was no accuracy lost w
 %   \item False alarms
 % \end{itemize}
 
-This section describes formal requirements necessary to correctly design and implement an abstract interpretation framework including \textit{reduced product}.
+This section describes formal requirements necessary to correctly design and implement an~abstract interpretation framework including \textit{reduced product}.
 
 \subsection{Domain of abstract values}
 
-As abstract value represents a set of concrete values, so their domains preserve the same relation. \textit{Domain of abstract values} represents a set of all \textit{abstract values} and \textit{domain of concrete values} corresponds to a power set of all concrete values.
+As abstract value represents a~set of concrete values, so their domains preserve the same relation. \textit{Domain of abstract values} represents a~set of all \textit{abstract values} and \textit{domain of concrete values} corresponds to a~power set of all concrete values.
 
 For easier comprehension, regard the following definition of \textit{integer interval domain}\cite{mine-WING12}, on which we will demonstrate the usage of defined terms in this chapter.
 
-\textit{Integer interval domain} approximates a set of integers by a pair $[l, h]$, where $l$ and $h$ represents minimal and maximal element of the set, respectively. For example:
+\textit{Integer interval domain} approximates a~set of integers by a~pair $[l, h]$, where $l$ and $h$ represents minimal and maximal element of the set, respectively. For example:
 
 \[
   \Set{ 2, 1, 100, 4 } \to [1, 100]
 \]
 
-As it can be seen, a set of integers $\Set{2, 1, 100, 4}$ is represented by integer interval domain as a pair $[1, 100]$. This so called \textit{abstraction function} is later formalized in \ref{ssec:abstraction-function}.
+As it can be seen, a~set of integers $\Set{2, 1, 100, 4}$ is represented by integer interval domain as a~pair $[1, 100]$. This so called \textit{abstraction function} is later formalized in \ref{ssec:abstraction-function}.
 
 Formal definition of domains used in the \textit{integer interval domain} follows:
 
@@ -205,13 +205,13 @@ Formal definition of domains used in the \textit{integer interval domain} follow
   \end{align*}
 \end{exmp}
 
-The \textit{domain of concrete values} $D$, in the case of integers, is a power set of integers $\mathbb Z$. To remind, a concrete value denotes any program value and their set describes all possible values of a given program value.
+The \textit{domain of concrete values} $D$, in the case of integers, is a~power set of integers $\mathbb Z$. To remind, a~concrete value denotes any program value and their set describes all possible values of a~given program value.
 
-And the \textit{domain of abstract values} $D^\#$ is defined to approximate sets of concrete values from $D$. In this case, it is a set of all pairs $[l, h]$, where $l$ and $h$ are integers or symbols representing positive or negative infinity.
+And the \textit{domain of abstract values} $D^\#$ is defined to approximate sets of concrete values from $D$. In this case, it is a~set of all pairs $[l, h]$, where $l$ and $h$ are integers or symbols representing positive or negative infinity.
 
 This abstraction was chosen, because it is useful for many kinds of numerical computation analyses\cite{mine-AIAA10} and its underlying concepts are easy to understand.
 
-By convention, a domain of concrete values will further be denoted as $D$ and a domain of abstract values as $D^\#$ and their elements as $C$ and $a$ respectively.
+By convention, a~domain of concrete values will further be denoted as $D$ and a~domain of abstract values as $D^\#$ and their elements as $C$ and $a$ respectively.
 
 \subsection{Abstraction function}\label{ssec:abstraction-function}
 
@@ -221,9 +221,9 @@ The correspondence between sets of concrete values and abstract values is establ
 \alpha_{D^\#}\colon D \to D^\#
 \]
 
-The \textit{abstraction function} assigns an abstract value to a given set of concrete values. It belongs to the core concepts of the abstract interpretation, because it provides a bridge between program values and their abstractions -- every program value has to be abstracted before proceeding with abstract interpretation of the program.
+The \textit{abstraction function} assigns an~abstract value to a~given set of concrete values. It belongs to the core concepts of the abstract interpretation, because it provides a~bridge between program values and their abstractions -- every program value has to be abstracted before proceeding with abstract interpretation of the program.
 
-To give a particular \textit{abstraction function}, consider the one used in the integer interval domain:
+To give a~particular \textit{abstraction function}, consider the one used in the integer interval domain:
 
 \begin{exmp}
   \begin{align*}
@@ -235,18 +235,18 @@ To give a particular \textit{abstraction function}, consider the one used in the
   \end{align*}
 \end{exmp}
 
-As it was outlined in the introduction to this section, the \textit{integer interval domain} represents sets of concrete values as a pair of minimal and maximal element -- the bounds of the interval.
+As it was outlined in the introduction to this section, the \textit{integer interval domain} represents sets of concrete values as a~pair of minimal and maximal element -- the bounds of the interval.
 
-The example demonstrates application of \textit{abstraction function} $\alpha_{D^\#}$ on a small set of integers, which is rather obvious. And the second application shows interval $[-\infty, \infty]$ corresponding to the set of all integers, $\mathbb Z$.
+The example demonstrates application of \textit{abstraction function} $\alpha_{D^\#}$ on a~small set of integers, which is rather obvious. And the second application shows interval $[-\infty, \infty]$ corresponding to the set of all integers, $\mathbb Z$.
 
 Note that this particular abstraction may include in the approximation some excessive concrete values due to its definition utilizing only minimal and maximal element -- this property of abstraction is denoted as \textit{incompleteness} and will be defined later in \ref{ssec:soundness-incompleteness}.
 
 \subsection{Concretization function}
-Dually to the abstraction function, \textit{concretization function} transforms an abstract value into a set of concrete values, which are represented by the given abstract value.
+Dually to the abstraction function, \textit{concretization function} transforms an~abstract value into a~set of concrete values, which are represented by the given abstract value.
 
-Importance of this function lies in the fact that it defines a concrete semantics of abstract values -- it enables us to translate results of abstract interpretation into the universe of concrete values. Together with abstract functions, it defines almost all subsequent terms of abstract interpretation.
+Importance of this function lies in the fact that it defines a~concrete semantics of abstract values -- it enables us to translate results of abstract interpretation into the universe of concrete values. Together with abstract functions, it defines almost all subsequent terms of abstract interpretation.
 
-A \textit{concretization function} is a function of type:
+A \textit{concretization function} is a~function of type:
 
 \[
 \gamma_{D^\#}\colon D^\# \to D
@@ -264,15 +264,15 @@ One example is the concretization function of the \textit{integer interval domai
   \end{align*}
 \end{exmp}
 
-Concretization function of the integer interval domain converts an interval into a set of all integers lying between the bounds of the interval, including the bounds.
+Concretization function of the integer interval domain converts an~interval into a~set of all integers lying between the bounds of the interval, including the bounds.
 
 As you can see, this concretization function does not omit any of the concrete values inside the interval, thanks to the definition, which over-approximates the set of concrete values, thus giving guarantee on \textit{soundness} -- this property is formalized in \ref{ssec:soundness-incompleteness}.
 
 \subsection{Partial order of abstract and concrete values}
 
-Since the domain of concrete values is defined as a power set, it can be partially ordered by set inclusion $\subseteq$. This property is interesting to abstract interpretation, because it allows to compare sets of abstract values in the sense of ``is included in'', which is a useful feature when computing a fixed point of a given loop in a program.
+Since the domain of concrete values is defined as a~power set, it can be partially ordered by set inclusion $\subseteq$. This property is interesting to abstract interpretation, because it allows to compare sets of abstract values in the sense of ``is included in'', which is a~useful feature when computing a~fixed point of a~given loop in a~program.
 
-Dually we define partial order on the domain of abstract values via $\sqsubseteq$ also expressing ``is included in''. Again, this relation enables us to compare abstract values and compute abstract fix point of a loop or of a complete program.
+Dually we define partial order on the domain of abstract values via $\sqsubseteq$ also expressing ``is included in''. Again, this relation enables us to compare abstract values and compute abstract fix point of a~loop or of a~complete program.
 
 Generally the $\sqsubseteq$ relation is defined as follows:
 
@@ -284,7 +284,7 @@ Generally the $\sqsubseteq$ relation is defined as follows:
 \end{definition}
 
 
-The following demonstration shows definition of $\sqsubseteq$ and a link between $\subseteq$ and $\sqsubseteq$ in the integer interval domain:
+The following demonstration shows definition of $\sqsubseteq$ and a~link between $\subseteq$ and $\sqsubseteq$ in the integer interval domain:
 
 \begin{exmp}
   \begin{align*}
@@ -303,9 +303,9 @@ As it can be seen, if the sets of concrete values do not omit any value between 
   \end{align*}
 \end{exmp}
 
-While the first case in the last example confirms the implication, the second serves as a counterexample. This example demonstrates the consequences of using approximations in static analysis, a deeper insight into properties of approximation is provided by section \ref{ssec:soundness-incompleteness}.
+While the first case in the last example confirms the implication, the second serves as a~counterexample. This example demonstrates the consequences of using approximations in static analysis, a~deeper insight into properties of approximation is provided by section \ref{ssec:soundness-incompleteness}.
 
-Using partial order defined by $\sqsubseteq$ and defining $\bot$ and $\top$ as minimal and maximal elements of the set $D^\#$, we are able to construct a lattice of abstract values.
+Using partial order defined by $\sqsubseteq$ and defining $\bot$ and $\top$ as minimal and maximal elements of the set $D^\#$, we are able to construct a~lattice of abstract values.
 
 \begin{figure}[ht!]
   \centering
@@ -412,7 +412,7 @@ Using partial order defined by $\sqsubseteq$ and defining $\bot$ and $\top$ as m
   \label{fig:interval-lattice}
 \end{figure}
 
-The figure \ref{fig:interval-lattice} show a part of infinite lattice of the integer interval abstract domain. The edges correspond to $\sqsubseteq$ relation except for transitivity. The lowest level represents an abstract value corresponding to an empty set. One level higher are placed intervals standing for sets of length one and edges connect them to intervals in upper level while expressing ``is included in'' relation.
+The figure \ref{fig:interval-lattice} show a~part of infinite lattice of the integer interval abstract domain. The edges correspond to $\sqsubseteq$ relation except for transitivity. The lowest level represents an~abstract value corresponding to an~empty set. One level higher are placed intervals standing for sets of length one and edges connect them to intervals in upper level while expressing ``is included in'' relation.
 
 % \begin{figure}[ht!]
 %   \centering
@@ -431,10 +431,10 @@ The figure \ref{fig:interval-lattice} show a part of infinite lattice of the int
 
 \subsection{Correctness of approximation}\label{ssec:soundness-incompleteness}
 
-If we want to gain informative results via a program analysis, we have to ensure that the analysis is \textit{correct}. Correctness consists of three distinct properties: \textit{soundness}, \textit{completeness} and \textit{termination}.
+If we want to gain informative results via a~program analysis, we have to ensure that the analysis is \textit{correct}. Correctness consists of three distinct properties: \textit{soundness}, \textit{completeness} and \textit{termination}.
 
 \paragraph{Soundness}
-Soundness expresses, that a given abstraction do include every concrete case having a particular property, but since it is an over-approximation, some of those cases might not occur in the reality.
+Soundness expresses, that a~given abstraction do include every concrete case having a~particular property, but since it is an~over-approximation, some of those cases might not occur in the reality.
 
 In order to be sound analysis, the abstraction and concretization functions has to satisfy the following requirement \cite{mine-AIAA10}:
 
@@ -442,9 +442,9 @@ In order to be sound analysis, the abstraction and concretization functions has 
   \forall C \in D: C \subseteq \gamma_{D^\#}(\alpha_{D^\#}(C))
 \]
 
-Intuitively soundness means, that no concrete value is omitted by abstraction. In the context of program analysis, soundness represents the \textit{lack of false negatives}, which is often required property.
+Intuitively, soundness means that no concrete value is omitted by abstraction. In the context of program analysis, soundness represents the \textit{lack of false negatives}, which is often required property.
 
-For example, when analysing a given program for run-time errors and there is a \textit{possibility} of zero division occurrence, sound analysis \textit{has to} report this fact.
+For example, when analysing a~given program for run-time errors and there is a~\textit{possibility} of zero division occurrence, sound analysis \textit{has to} report this fact.
 
 The proof of soundness of integer interval domain is as follows:
 
@@ -466,7 +466,7 @@ The proof of soundness of integer interval domain is as follows:
 \end{proof}
 
 \paragraph{Completeness}
-Dually to soundness, completeness represent guarantee that any statement proved in abstract is also valid in concrete \cite{mine-AIAA10}, which means that a statement derived from abstraction is truthful for every individual concrete case.
+Dually to soundness, completeness represent guarantee that any statement proved in abstract is also valid in concrete \cite{mine-AIAA10}, which means that a~statement derived from abstraction is truthful for every individual concrete case.
 
 Completeness requires the following \cite{mine-AIAA10}:
 
@@ -495,32 +495,32 @@ Since abstract interpretation does not require completeness (reason will be give
   Which proves \textit{incompleteness} of the integer interval domain.
 \end{proof}
 
-\paragraph{Termination} Termination is also very important property of a program analysis. However, termination is mainly matter of fix point computation, which is not the topic of this thesis. Details can be found in \cite{CousotCousot79-1}.
+\paragraph{Termination} Termination is also very important property of a~program analysis. However, termination is mainly matter of fix point computation, which is not the topic of this thesis. Details can be found in \cite{CousotCousot79-1}.
 
 To conclude this section, abstract interpretation requires \textit{soundness} and \textit{termination}, while \textit{completeness} is not achievable as in case of all sound formal methods \cite{CousotEtAl06-ASIAN}.
 
 \subsection{Galois connection}
 
-When designing an abstract interpretation framework, one of methods shown in \cite{CousotCousot92-2} is via defining \textit{Galois connection} as introduced in \cite{CousotCousot76-1}. Galois connection puts constraints on abstraction and concretization function in exchange of interesting properties, e.g. ``best'' approximation, which will be described later in this section.
+When designing an~abstract interpretation framework, one of methods shown in \cite{CousotCousot92-2} is via defining \textit{Galois connection} as introduced in \cite{CousotCousot76-1}. Galois connection puts constraints on abstraction and concretization function in exchange of interesting properties, e.g. ``best'' approximation, which will be described later in this section.
 
-Galois connection is defined via a pair of adjoined functions $\langle \alpha_{D^\#}, \gamma_{D^\#} \rangle$ as followed \cite{CousotCousot79-1}:
+Galois connection is defined via a~pair of adjoined functions $\langle \alpha_{D^\#}, \gamma_{D^\#} \rangle$ as followed \cite{CousotCousot79-1}:
 
 \begin{definition}
   Let $\langle D, \subseteq \rangle$, $\langle D^\#, \sqsubseteq \rangle$ be posets and $\alpha_{D^\#}$, $\gamma_{D^\#}$ abstraction and concretization functions respectively.
 
-  A pair $\langle \alpha_{D^\#}, \gamma_{D^\#} \rangle$ defines Galois connection if the following criteria are met.
+  a~pair $\langle \alpha_{D^\#}, \gamma_{D^\#} \rangle$ defines Galois connection if the following criteria are met.
   \begin{enumerate}
     \item $\alpha_{D^\#}$ and $\alpha_{D^\#}$ are \textit{isotone}, in terms of $\subseteq$ and $\sqsubseteq$
     \item $\forall C \in D: C \subseteq \gamma_{D^\#}(\alpha_{D^\#}(C))$
-    \item $\forall a \in D^\#: a \subseteq \alpha_{D^\#}(\gamma_{D^\#}(a))$
+    \item $\forall a~\in D^\#: a~\subseteq \alpha_{D^\#}(\gamma_{D^\#}(a))$
   \end{enumerate}
 \end{definition}
 
-Intuitively, the presence of \textit{Galois connection} ensures that any concrete value $T \in D$ has a ``best'' approximation $\alpha_{D^\#}(T)$, that over-approximates $T$ as $T \subseteq \gamma_{D^\#}(\alpha_{D^\#}(T))$. And given any other over-approximation $R \in D^\#$, so $T \subseteq \gamma_{D^\#}(R)$, then $\alpha_{D^\#}(T)$ is more precise, because $\alpha_{D^\#}(T) \sqsubseteq R$.
+Intuitively, the presence of \textit{Galois connection} ensures that any concrete value $T \in D$ has a~``best'' approximation $\alpha_{D^\#}(T)$, that over-approximates $T$ as $T \subseteq \gamma_{D^\#}(\alpha_{D^\#}(T))$. And given any other over-approximation $R \in D^\#$, so $T \subseteq \gamma_{D^\#}(R)$, then $\alpha_{D^\#}(T)$ is more precise, because $\alpha_{D^\#}(T) \sqsubseteq R$.
 
-% TODO draw a diagram representing GC
+% TODO draw a~diagram representing GC
 
-Galois connection also allows us to define \textit{soundness} and \textit{completeness} dually (via abstract values instead of concrete values). Moreover, it also defines \textit{abstract operation} in a precise way as shown in \ref{sec:operations}.
+Galois connection also allows us to define \textit{soundness} and \textit{completeness} dually (via abstract values instead of concrete values). Moreover, it also defines \textit{abstract operation} in a~precise way as shown in \ref{sec:operations}.
 
 \subsection{Abstract operations}\label{sec:operations}
 
@@ -541,9 +541,9 @@ In case of Galois connection, abstract operations are precisely defined, because
   \]
 \end{definition}
 
-Intuitively, abstraction of operation is defined as the abstraction of a set, which contains results of all possible applications of function $F$ on concretizations of abstract arguments.
+Intuitively, abstraction of operation is defined as the abstraction of a~set, which contains results of all possible applications of function $F$ on concretizations of abstract arguments.
 
-If the abstraction is not defined via Galois connection, the general approach is to over-approximate results of $F$. Therefore, we require $F_{D^\#}$ to be a sound abstraction \cite{CousotEtAl06-ASIAN}:
+If the abstraction is not defined via Galois connection, the general approach is to over-approximate results of $F$. Therefore, we require $F_{D^\#}$ to be a~sound abstraction \cite{CousotEtAl06-ASIAN}:
 
 \[
   \forall a_i \in D^\#: F_{D^\#}((\gamma_{D^\#}(a_i))_{1 \le i \le n}) \subseteq \gamma_{D^\#}(F((a_i)_{1 \le i \le n}))
@@ -551,7 +551,7 @@ If the abstraction is not defined via Galois connection, the general approach is
 
 Intuitively, no concrete case is omitted by abstract operation.
 
-To demonstrate a particular abstract operation, we will define abstraction of integer addition using the integer interval domain:
+To demonstrate a~particular abstract operation, we will define abstraction of integer addition using the integer interval domain:
 
 \begin{definition}
   Let $F$ be integral addition, thus function of type $F: \mathbb Z \times \mathbb Z \to \mathbb Z$. The corresponding abstract operation $F_{D^\#}: D^\# \times D^\# \to D^\#$ in the integer interval domain is defined as \cite{mine-WING12}:
@@ -563,7 +563,7 @@ To demonstrate a particular abstract operation, we will define abstraction of in
 
 Thanks to Galois connection, integer addition can be defined in the way indicated in definition \ref{def:operation-galois} -- we sum every pair of concrete values from the first and the second interval and then we apply abstraction function on the set of results.
 
-It can be shown, that the procedure described is equivalent to an interval with lower and upper bounds corresponding to sum of lower bounds of the input intervals, respectively sum of upper bounds of the input intervals, as demonstrated by the following example:
+It can be shown, that the procedure described is equivalent to an~interval with lower and upper bounds corresponding to sum of lower bounds of the input intervals, respectively sum of upper bounds of the input intervals, as demonstrated by the following example:
 
 \begin{exmp}
   \begin{align*}
@@ -572,21 +572,21 @@ It can be shown, that the procedure described is equivalent to an interval with 
   \end{align*}
 \end{exmp}
 
-The first example shows sum of two intervals, where each of them represents one concrete value. The latter example demonstrates a sum of two non-trivial intervals and it can be seen that the result interval is computed as sum of lower and upper bounds of the input intervals, respectively.
+The first example shows sum of two intervals, where each of them represents one concrete value. The latter example demonstrates a~sum of two non-trivial intervals and it can be seen that the result interval is computed as sum of lower and upper bounds of the input intervals, respectively.
 
 \chapter{Reduced product}\label{ch:reduced-product}
 
-As demonstrated in example in the section \ref{sec:example}, a single abstract domain may not be able to accurately cover all possible abstract operations. To solve this issue, abstract interpretation provides two options:
+As demonstrated in example in the section \ref{sec:example}, a~single abstract domain may not be able to accurately cover all possible abstract operations. To solve this issue, abstract interpretation provides two options:
 
 \paragraph{One universal abstract domain}
-Deploying one universal abstract domain requires no modification to abstract interpretation defined in previous chapters, but design of such universal abstract domain has shown to be a very difficult task, which may not be feasible or even possible.
+Deploying one universal abstract domain requires no modification to abstract interpretation defined in previous chapters, but design of such universal abstract domain has shown to be a~very difficult task, which may not be feasible or even possible.
 
 \paragraph{Multiple specialized abstract domains}
-The other choice is to modify abstract interpretation framework to allow parallel analysis via multiple specialized abstract domain and provide refinement between domains to improve their accuracy. So each of these domains may capture a specific property of concrete value while ignoring the others.
+The other choice is to modify abstract interpretation framework to allow parallel analysis via multiple specialized abstract domain and provide refinement between domains to improve their accuracy. So each of these domains may capture a~specific property of concrete value while ignoring the others.
 
 \vspace{1.5\baselineskip} % TODO
 
-In this thesis we describe the second approach, because of its advantages. When designing a new abstract domain, this approach allows us to focus on the core functionality of the domain and does not burden us with necessity of implementing all possible abstract operations in accurate manner, which may not be possible or feasible.
+In this thesis we describe the second approach, because of its advantages. When designing a~new abstract domain, this approach allows us to focus on the core functionality of the domain and does not burden us with necessity of implementing all possible abstract operations in accurate manner, which may not be possible or feasible.
 
 However, the use of multiple specialized domains ultimately leads to the need for inter-domain accuracy refinements, which is the topic of this chapter. This chapter establishes \textit{domain product} in the section \ref{sec:domain-product}, which is later in the section \ref{sec:reduced-cardinality-product} extended into \textit{reduced product}.
 
@@ -596,9 +596,9 @@ However, the use of multiple specialized domains ultimately leads to the need fo
 %   \item Multiple representations of concrete value
 % \end{itemize}
 
-Motivation to introduce \textit{domain product} to abstract interpretation has been outlined in the beginning of this chapter - using a single abstract value to represent a program value would lead either to inaccurate results or complex implementation. Also it would not allow to deploy a new abstract domain tailored for a specific problem. \cite{CousotEtAl06-ASIAN}
+Motivation to introduce \textit{domain product} to abstract interpretation has been outlined in the beginning of this chapter -- using a~single abstract value to represent a~program value would lead either to inaccurate results or complex implementation. Also it would not allow to deploy a~new abstract domain tailored for a~specific problem \cite{CousotEtAl06-ASIAN}.
 
-To circumvent this obstacle, it is convenient to introduce a \textit{domain product}, which acts as encapsulation of abstract values representing the same program variable. From an external perspective, the domain products performs as a standalone abstract domain.
+To circumvent this obstacle, it is convenient to introduce a~\textit{domain product}, which acts as encapsulation of abstract values representing the same program variable. From an~external perspective, the domain products performs as a~standalone abstract domain.
 
 \textit{Domain product} is defined as follows \cite{CousotCousotMauborgne-FoSSaCS-11}:
 
@@ -612,16 +612,16 @@ To circumvent this obstacle, it is convenient to introduce a \textit{domain prod
   \end{align*}
 \end{definition}
 
-Domain product $D^\#$ is defined as a simple Cartesian product of the contained abstract domains, thus contained values are independent of each other.
+Domain product $D^\#$ is defined as a~simple Cartesian product of the contained abstract domains, thus contained values are independent of each other.
 
 The semantics of $\sqsubseteq$ is naturally expanded to the set of contained domains as it is defined component-wise and $P \sqsubseteq Q$ is defined if and only if it is defined on all corresponding components of $P$ and $Q$.
 
 The concretization function $\gamma_{D^\#}$ is intuitively defined as intersection of concretization of all contained abstract values.
 
-To approach the definition, consider the following example of domain product of integer interval domain and an \textit{abstract domain representing parity}.
+To approach the definition, consider the following example of domain product of integer interval domain and an~\textit{abstract domain representing parity}.
 
 \begin{exmp}\label{exmp:domain-product}
-  Definition of the integer interval domain and the parity domain:
+  Definition of the integer interval domain and the parity domain reduced product:
   \begin{align*}
     &D = D_1 = D_2 = \mathcal P(\mathbb Z)\\
     &D^\#_1 = \Set{[l,h] | l,h \in \mathbb{Z} \cup \Set{\pm\infty}}\\
@@ -642,16 +642,17 @@ The example demonstrates domain product of two abstract domains and results of c
 
 As \textit{domain product} contains multiple abstract domains, each covering different aspect of concrete value, we may increase accuracy of contained domains by exploiting inter-domain refinements.
 
-Intuitively, if one of the domains has inaccurately approximated a result of some concrete operation, while another domain was able to give an accurate abstraction, it would be convenient to enhance accuracy of the first domain using information provided by the second domain. Obviously, the degree of improvement depends on the difference in the nature of abstraction used by domains.
+Intuitively, if one of the domains has inaccurately approximated a~result of some concrete operation, while another domain was able to give an~accurate abstraction, it would be convenient to enhance accuracy of the first domain using information provided by the second domain. Obviously, the degree of improvement depends on the difference in the nature of abstraction used by domains.
 
 \textit{Reduced product} provides framework for improvements of abstract domains contained in \textit{domain product}. But in order to preserve correctness of abstract interpretation, it has to hold the following:
 
-\paragraph{Soundness}  A reduction of domain product has to keep its concrete semantics unmodified -- a concrete value it represents has to remain the same as before reduction.
+\paragraph{Soundness}
+A~reduction of domain product has to keep its concrete semantics unmodified -- a~concrete value it represents has to remain the same as before reduction.
 
-\textit{Reduced product} is defined in the following way: \cite{CousotCousotMauborgne-FoSSaCS-11}
+\textit{Reduced product} is defined in the following way \cite{CousotCousotMauborgne-FoSSaCS-11}:
 
 \begin{definition}
-  Let $\langle D^\#, \sqsubseteq \rangle$ be a \textit{domain product} with concretization function $\gamma_{D^\#}$.
+  Let $\langle D^\#, \sqsubseteq \rangle$ be a~\textit{domain product} with concretization function $\gamma_{D^\#}$.
 
   Then \textit{reduced product} is $\langle D^\# /_\equiv, \sqsubseteq \rangle$, where equivalence is defined as  $\left(P \equiv Q \right) \triangleq \left(\gamma_{D^\#}(P) = \gamma_{D^\#}(Q) \right)$ and $\gamma_{D^\#}$ as well as $\sqsubseteq$ are naturally extended to the equivalence class $[P]/_\equiv$, $P \in D^\#$, of $\equiv$.
 \end{definition}
@@ -672,7 +673,7 @@ Let us show usage of reduced product on the integer interval domain and the pari
 
 The previous example demonstrates principles of reduced product -- while its concretization stays the same, the interval abstract value is refined to exclude boundaries, which are not odd. This can be achieved, because the parity abstract value was able to prove that the concrete value is always odd.
 
-However, implementation of the most precise reduce product,as defined here, can hardly be modular and feasible \cite{CousotCousotMauborgne-FoSSaCS-11}, thus in practice only over-approximations are used. One approach to reduced product approximation is described in the following chapter.
+However, implementation of the most precise reduce product, as defined here, can hardly be modular and feasible \cite{CousotCousotMauborgne-FoSSaCS-11}, thus in practice only over-approximations are used. One approach to reduced product approximation is described in the following chapter.
 
 \chapter{Implementation in \textsc{Canal}}\label{ch:implementation}
 % \begin{itemize}
@@ -684,7 +685,7 @@ This chapter addresses \textsc{Canal} project and its implementation of \textit{
 
 \section{Introduction to \textsc{Canal} project}
 
-\textsc{Canal} is a static analysis tool designed to analyze behaviour of
+\textsc{Canal} is a~static analysis tool designed to analyze behaviour of
 application programs written in [programming language] C. It is based on the theoretical
 framework of abstract interpretation, with focus on the scalability to
 large programs and proper handling of real-world source code. \cite{Canal}
@@ -692,15 +693,15 @@ large programs and proper handling of real-world source code. \cite{Canal}
 It consists of three main components:
 
 \begin{description}
-  \item[Abstract domains] set of predefined abstract domains to cover machine integers, floating point numbers, arrays and structures
-  \item[Interpreter] component responsible for source code traversal and program state management
-  \item[Operations] translation from program instructions to operations on abstract values
+  \item[Abstract domains] set of predefined abstract domains to cover machine integers, floating point numbers, arrays and structures.
+  \item[Interpreter] component responsible for source code traversal and program state management.
+  \item[Operations] translation from program instructions to operations on abstract values.
 \end{description}
 
 Components \textit{abstract domains} and \textit{operations} correspond to entities described in chapter \ref{ch:abstract-interpretation}. \textit{Interpreter} involves concept of \textit{least fixed point} and it is interesting from technical point of view, because it incorporates LLVM libraries for interaction with source code.
 
-LLVM is a a compiler framework, which provides a combination of key capabilities that are important for practical, lifelong analysis and
-transformation of programs. \cite{llvm} It isolates \textsc{Canal} from machine-level semantics of C language and allows to offload processes associated with compiling and instruction-level analysis, therefore development of \textsc{Canal} can fully focus on abstract interpretation.
+LLVM is a~compiler framework, which provides a~combination of key capabilities that are important for practical, lifelong analysis and
+transformation of programs \cite{llvm}. It isolates \textsc{Canal} from machine-level semantics of C language and allows to offload processes associated with compiling and instruction-level analysis, therefore development of \textsc{Canal} can fully focus on abstract interpretation.
 
 Provided the previous components, \textsc{Canal} is able to statically analyze general programs written in C. The high-level work flow can be described in the following way:
 
@@ -716,13 +717,15 @@ Abstract interpretation is involved from step 3 to step 5, particularly \textit{
 
 \section{Framework of reduced product in \textsc{Canal}}
 
-This section describes implementation of \textit{reduced product} based on theory introduced in chapter \ref{ch:reduced-product}. To remind, the purpose of reduced product is to improve accuracy of contained abstract values without changing its concrete semantics -- the result of concretization function. These accuracy improvements result in more accurate results of abstract operations, thus reducing the number of false positives and making the whole analysis more accurate.
+This section describes implementation of \textit{reduced product} based on theory introduced in chapter \ref{ch:reduced-product} and on the description of reduced product in \textsc{Astreé} abstract interpreter provided in \cite{CousotEtAl06-ASIAN}.
+
+To remind, the purpose of reduced product is to improve accuracy of contained abstract values without changing its concrete semantics -- the result of concretization function. These accuracy improvements result in more accurate results of abstract operations, thus reducing the number of false positives and making the whole analysis more accurate.
 
 Precisely this implementation is over-approximation of reduced product, because the most precise implementation of reduced product may be very hard if unfeasible at all. Also the most precise implementation would put constraints on modularity of the whole abstract interpretation framework, thus making its design and implementation difficult.
 
 Therefore we have chosen to implement over-approximation of reduced product, which approaches the accuracy of the most precise reduced product via inter-domain communication, while keeping the property of soundness.
 
-Principles of accuracy refinement are based on concept of inter-domain communication framework -- abstract values contained in reduced product are allowed to produce messages , which may be consumed by other domains and the contained information may lead to accuracy refinement.
+Principles of accuracy refinement are based on concept of inter-domain communication framework -- abstract values contained in reduced product are allowed to produce messages, which may be consumed by other domains and the contained information may lead to accuracy refinement.
 
 Communication framework over-approximating reduced product consists of the following components:
 
@@ -740,31 +743,31 @@ When designing implementation, the functionality of communication framework was 
   \item[Extract and Refine operations] define per-domain operations for message production, consumption and accuracy refinements (\textit{communication protocol}).
 \end{description}
 
-At the beginning of analysis, for each program variable an instance of \textit{container} is initialized and filled with abstract values corresponding to the type of the variable. Since then, the container is treated by the analysis as a single abstract value.
+At the beginning of analysis, for each program variable an~instance of \textit{container} is initialized and filled with abstract values corresponding to the type of the variable. Since then, the container is treated by the analysis as a~single abstract value.
 
 During the analysis, all abstract operations applied on the container are passed component-wisely to the contained abstract values and after abstract operation application, the reduction phase is initiated.
 
-Reduction phase is managed by container and depends on its internal structure. At first a particular abstract value is chosen from the container's content and asked to extract refinement information -- produce a message. Then this message is passed to the next abstract value, which refines itself using information from the message, produces a new message and the procedure is repeated until all contained abstract values had chance to refine themselves and influence accuracy of the other contained abstract values.
+Reduction phase is managed by container and depends on its internal structure. At first a~particular abstract value is chosen from the container's content and asked to extract refinement information -- produce a~message. Then this message is passed to the next abstract value, which refines itself using information from the message, produces a~new message and the procedure is repeated until all contained abstract values had chance to refine themselves and influence accuracy of the other contained abstract values.
 
 Implementation of the described process including the incorporated entities is described in the following sections.
 
 \subsection{Container}
 
-The container represents \textit{domain product} (defined in the section \ref{sec:domain-product}). To remind, domain products serves as an encapsulation for multiple abstract values representing the same program variable. And similarly is defined the first container's responsibility:
+The container represents \textit{domain product} (defined in the section \ref{sec:domain-product}). To remind, domain products serves as an~encapsulation for multiple abstract values representing the same program variable. And similarly is defined the first container's responsibility:
 
 \paragraph{Encapsulation}
-As the name suggests, the container has to encapsulate the contained abstract values, which means it stores the contained abstract values and from outside it acts as a single abstract value. If an abstract operation is issued, the container propagates the call to all contained abstract values component-wisely, thus emulating separate analyses of the program via different abstract domains.
+As the name suggests, the container has to encapsulate the contained abstract values, which means it stores the contained abstract values and from outside it acts as a~single abstract value. If an~abstract operation is issued, the container propagates the call to all contained abstract values component-wisely, thus emulating separate analyses of the program via different abstract domains.
 
 \vspace{1\baselineskip} % TODO
 
-Also the container has to fulfil a part of the \textit{reduced product} (defined in the section \ref{sec:reduced-cardinality-product}) over-approximation role -- therefore the following responsibility has to be implemented:
+Also the container has to fulfil a~part of the \textit{reduced product} (defined in the section \ref{sec:reduced-cardinality-product}) over-approximation role -- therefore the following responsibility has to be implemented:
 
 \paragraph{Inter-domain communication execution}
 The container is required to initiate, manage and terminate the process of inter-domain communication. This involves invocation of message production \textit{in predefined order}, which is important, because the reduction approximation is not commutative operation, thus the result depends on the order of execution.
 
-Besides message production, it also controls message routing and message consumption invocation. The main aspect of message routing and consumption is the \textit{internal structure} of domain product, which determines the scope of message (recipients) and the order of reception -- the basic approach is to define a fixed order of contained abstract values and let all already produced messages to be consumed by all subsequent abstract values.
+Besides message production, it also controls message routing and message consumption invocation. The main aspect of message routing and consumption is the \textit{internal structure} of domain product, which determines the scope of message (recipients) and the order of reception -- the basic approach is to define a~fixed order of contained abstract values and let all already produced messages to be consumed by all subsequent abstract values.
 
-The whole process is terminated after a \textit{certain number of steps} depending on the number of contained abstract values. This number is chosen to allow message exchange between all contained abstract values.
+The whole process is terminated after a~\textit{certain number of steps} depending on the number of contained abstract values. This number is chosen to allow message exchange between all contained abstract values.
 
 \vspace{1\baselineskip} % TODO
 
@@ -789,9 +792,9 @@ The following diagrams shows the process of inter-domain communication:
   \label{fig:communication}
 \end{figure}
 
-The diagram \ref{fig:communication} demonstrates inter-domain communication inside of a container containing three abstract values. The communication is initiated by asking the \textit{interval} abstract value to produce a message $a$, which is routed to the \textit{set} abstract value. The \textit{set} consumes message $a$, while using the received information to improve its own accuracy.
+The diagram \ref{fig:communication} demonstrates inter-domain communication inside of a~container containing three abstract values. The communication is initiated by asking the \textit{interval} abstract value to produce a~message $a$, which is routed to the \textit{set} abstract value. The \textit{set} consumes message $a$, while using the received information to improve its own accuracy.
 
-Then it produces a new message $b$ and sends it combined with the message $a$ to the next abstract value. This procedure is repeated again, this time for the \textit{bitfield} abstract value.
+Then it produces a~new message $b$ and sends it combined with the message $a$ to the next abstract value. This procedure is repeated again, this time for the \textit{bitfield} abstract value.
 
 The dashed edge connecting the last and the first abstract value expresses that the communication might be terminated at that point or the whole procedure might be repeated again taking all previously produced messages into the account.
 
@@ -809,20 +812,20 @@ But under this assumption, it can be intuitively seen that the algorithm sequent
 \paragraph{Termination}
 As the number of contained domains is always finite and the number of repetitions is always fixed before executing the analysis, the proof of termination is trivial.
 
-\paragraph{Implementation} The implementation of the previously described features is provided by \texttt{Product::Vector} class. Precisely contained abstract values are stored in a member variable \texttt{mValues}, which is an instance of  dynamic array \texttt{std::vector}. The order of linked list elements defines the order of message production and consumption.
+\paragraph{Implementation} The implementation of the previously described features is provided by \texttt{Product::Vector} class. Precisely contained abstract values are stored in a~member variable \texttt{mValues}, which is an~instance of  dynamic array \texttt{std::vector}. The order of linked list elements defines the order of message production and consumption.
 
 Particularly the inter-domain communication is initiated in member function \texttt{collaborate}, which iterates through \texttt{mValues} list while invocating message production and consumption. This function also manages combining of previously transmitted messages with the current messages and controls the termination of communication.
 
-All other member functions serve as a proxies to propagate abstract functions calls to all contained abstract values.
+All other member functions serve as a~proxies to propagate abstract functions calls to all contained abstract values.
 
 \subsection{Messages}
 
-The message entity mediates the information exchange between abstract values. While it mainly serves as an information carrier, it has also two responsibilities:
+The message entity mediates the information exchange between abstract values. While it mainly serves as an~information carrier, it has also two responsibilities:
 
 \paragraph{Modularity support}
 In order to allow future expansion of reduced product to new abstract domains, the message has to provide interface, which permits simple addition of carried information without necessity to modify other parts of the abstract interpreter.
 
-This issue is addressed by splitting contained information into related chunks, which are managed separately, in out terminology we call these chunks \textit{message fields}. An example of message field is given in the section \ref{sec:integer-reduced-product}
+This issue is addressed by splitting contained information into related chunks, which are managed separately, in out terminology we call these chunks \textit{message fields}. an~example of message field is given in the section \ref{sec:integer-reduced-product}
 
 \paragraph{Combination of messages}
 As the container spans the message scope to all subsequent message transmissions, it is necessary to provide support for merging the previous message with the current message.
@@ -834,11 +837,11 @@ It is important to keep in mind this property when designing new \textit{message
 \paragraph{Implementation}
 The implementation is partitioned between two classes: \texttt{Product::Message} and \texttt{Product::MessageField}.
 
-\texttt{Product::Message} class defines a carrier for \textit{message fields} as member variable \texttt{mFields}, which is an instance of map \texttt{std::map} -- the keys of this hashmaps represents type of message field, while the values are the particular message fields. Due to the usage of hashmap, only one instance of a particular message field type is allowed.
+\texttt{Product::Message} class defines a~carrier for \textit{message fields} as member variable \texttt{mFields}, which is an~instance of map \texttt{std::map} -- the keys of this hashmaps represents type of message field, while the values are the particular message fields. Due to the usage of hashmap, only one instance of a~particular message field type is allowed.
 
-This class also defines member function \texttt{meet}, which takes another instance of this class as a parameter and performs combination of these two messages in the sense described above using member function \texttt{meet} of contained instances of \texttt{Product::MessageField}.
+This class also defines member function \texttt{meet}, which takes another instance of this class as a~parameter and performs combination of these two messages in the sense described above using member function \texttt{meet} of contained instances of \texttt{Product::MessageField}.
 
-\texttt{Product::MessageField} class provides interface for implementing specific \textit{message fields}, which carry refinement information from one abstract value to another. The interface implementation of member function \texttt{meet}, which takes another instance of this class and performs combination of these two message fields. An example of message field can be found in the section \ref{sec:integer-reduced-product}.
+\texttt{Product::MessageField} class provides interface for implementing specific \textit{message fields}, which carry refinement information from one abstract value to another. The interface implementation of member function \texttt{meet}, which takes another instance of this class and performs combination of these two message fields. an~example of message field can be found in the section \ref{sec:integer-reduced-product}.
 
 \subsection{Extract and refine operations}
 
@@ -849,7 +852,7 @@ Both operations act as sockets exchanging information between two domains, where
 The basic idea is to synthesize useful information about the current abstract value and later use this information to improve accuracy of another domain. The most important thing to keep in mind when designing extract and refine operations is that the exchanged information has to \textit{preserve soundness of approximation}. Otherwise refinements using this information might break the soundness property of the analysis.
 
 \paragraph{Extract operation}
-Its application on a given abstract value results into a message containing refinement information. The type of contained information may vary from one to another abstract domain as it highly depends on the property the domain is exploiting to provide abstraction.
+Its application on a~given abstract value results into a~message containing refinement information. The type of contained information may vary from one to another abstract domain as it highly depends on the property the domain is exploiting to provide abstraction.
 
 An example is provided in the section \ref{sec:integer-reduced-product}.
 
@@ -858,16 +861,16 @@ It attempts to improve accuracy of abstract value using refinement information f
 
 A significant refinement can occur, e.g. when the previously executed abstract operation was inaccurately over-approximated and the refinement operation was able to at least partially reconstruct the current abstract value.
 
-However, an occurrence of no accuracy improvements is also possible, especially in the cases when the current abstract values was the only abstract value able to accurately approximate an abstract operation or the definition of the execution order prevented the current abstract value from receiving any messages.
+However, an~occurrence of no accuracy improvements is also possible, especially in the cases when the current abstract values was the only abstract value able to accurately approximate an~abstract operation or the definition of the execution order prevented the current abstract value from receiving any messages.
 
 An example can be found again in the section \ref{sec:integer-reduced-product}.
 
 \paragraph{Implementation}
-Interface for implementing \textit{extract} and \textit{refine} functions is defined in \texttt{Domain} class as member functions \texttt{extract} and \texttt{refine}. Both of them take an instance of \texttt{Product::Message} as the only argument and these function are expected to set respectively read refinement informations from the passed message.
+Interface for implementing \textit{extract} and \textit{refine} functions is defined in \texttt{Domain} class as member functions \texttt{extract} and \texttt{refine}. Both of them take an~instance of \texttt{Product::Message} as the only argument and these function are expected to set respectively read refinement informations from the passed message.
 
 \section{Integer reduced product}\label{sec:integer-reduced-product}
 
-This section provides practical information about deploying \textit{reduced product} on existing abstract domains. Moreover, it might serve as a part of a guide covering topics on development of \textsc{Canal} project.
+This section provides practical information about deploying \textit{reduced product} on existing abstract domains. Moreover, it might serve as a~part of a~guide covering topics on development of \textsc{Canal} project.
 
 At the time of writing this thesis, \textsc{Canal} has 3 distinct abstract domains designed for analysing properties of integer variables:
 
@@ -881,12 +884,12 @@ As it can be seen, these three abstract domains exploit almost orthogonal concep
 
 \subsection{\texttt{MinMax} message field design}
 
-The first decision is to choose a suitable refinement information. The requirements for refinement information to be successful are the following:
+The first decision is to choose a~suitable refinement information. The requirements for refinement information to be successful are the following:
 
 \begin{description}
-  \item[Easily extractable] If we are not able to extract the refinement information, we cannot produce a message, which is the primary condition for successful accuracy improvements.
-  \item[Easily refineable] Having a very accurate refinement information without a possibility to apply them is also useless for accuracy improvements.
-  \item[Covering an inaccurate operation] Providing refinement information, which are less accurate than the actual abstract value, leads to no accuracy improvements.
+  \item[Easily extractable] If we are not able to extract the refinement information, we cannot produce a~message, which is the primary condition for successful accuracy improvements.
+  \item[Easily refineable] Having a~very accurate refinement information without a~possibility to apply them is also useless for accuracy improvements.
+  \item[Covering an~inaccurate operation] Providing refinement information, which are less accurate than the actual abstract value, leads to no accuracy improvements.
 \end{description}
 
 The minimal number of abstract domains which can be refined is 2 -- we need to have one abstract domain suitable for extraction of refinement information and another abstract domain, which is able to take the advantage of refinement information and improve its accuracy.
@@ -894,9 +897,9 @@ The minimal number of abstract domains which can be refined is 2 -- we need to h
 In our case we have chosen to implement \texttt{MinMax} message field, which basically is the integer interval domain. This choice allowed us to exchange information about lower and upper bounds between all three integer domains implemented in \textsc{Canal}.
 
 \paragraph{Implementation}
-Implementation can be found in class \texttt{Field::MinMax}, which is implementing the interface defined by \texttt{Product::MessageField}. The implementation incorporates an instance of the integer interval domain \texttt{Integer::Interval} which is stored in member variable \texttt{mInterval}.
+Implementation of this message field can be found in class \texttt{Field::MinMax}, which is implementing the interface defined by \texttt{Product::MessageField}. The implementation incorporates an~instance of the integer interval domain \texttt{Integer::Interval} which is stored in member variable \texttt{mInterval}.
 
-The member function \texttt{meet} exploits the fact that this operation is already defined in \texttt{Integer::Interval} and uses this implementation -- intuitively \textit{meet} operation corresponds to the intersection of two intervals. This fact also transfers a burden of the correctness proof to the integer interval domain.
+The member function \texttt{meet} exploits the fact that this operation is already defined in \texttt{Integer::Interval} and uses this implementation -- intuitively \textit{meet} operation corresponds to the intersection of two intervals. This fact also transfers a~burden of the correctness proof to the integer interval domain.
 
 \subsection{Extract and refine implementation}
 
@@ -905,13 +908,13 @@ Implementation of these two methods on all three integer domains is fairly strai
 To remind, both two operations has to keep the property of soundness, otherwise the soundness of the whole analysis is lost.
 
 \paragraph{Implementation}
-Implementation of \texttt{extract} and \texttt{refine} member functions can be found in each of these three classes: \texttt{Integer::Interval}, \texttt{Integer::Set} and \texttt{Integer::Bitfield}. All of listed function are exploiting already defined member functions \texttt{signedMin}, \texttt{signedMax}, etc. for \textit{extract operation} and \texttt{fromInterval} for \textit{refine operation}.
+The corresponding implementations of \texttt{extract} and \texttt{refine} member functions can be found in these three classes: \texttt{Integer::Interval}, \texttt{Integer::Set} and \texttt{Integer::Bitfield}. All of listed function are exploiting already defined member functions \texttt{signedMin}, \texttt{signedMax} for \textit{extract} operation and \texttt{fromInterval} for \textit{refine} operation.
 
 \chapter{\textsc{GNU Core Utilities} analysis}\label{ch:measurements}
 
 This chapter addresses measuring effectiveness and efficiency of reduced product implementation in \textsc{Canal} project.
 
-The set of test programs was chosen regarding the focus of the project -- analysis of real-life source codes. Therefore, the impact of implementation is measured on a set of utilities from \textsc{GNU Coreutils} project.
+The set of test programs was chosen regarding the focus of the project -- analysis of real-life source codes. Therefore, the impact of implementation is measured on a~set of utilities from \textsc{GNU Coreutils} project.
 
 \section{Methodology}
 
@@ -921,7 +924,7 @@ Therefore, we have decided to measure the final impact on the analysis results -
 
 \section{Results}
 
-The results are arranged in a table, which contains the name of program, total number of non-$\top$ operations, number of improved operations and durations analysis with and without reduced product enabled.
+The results are arranged in a~table, which contains the name of program, total number of non-$\top$ operations, number of improved operations and durations analysis with and without reduced product enabled.
 
 \begin{table}
   \centering
@@ -1002,12 +1005,12 @@ Conversely, the programs, which do not incorporate the combination of arithmetic
 
   \end{tabular}
   \caption{Impact of reduced product on \textsc{GNU Coreutils} analysis}
-  \caption*{\footnotesize Legend: $t_0$ duration with RP disabled; $t_1$ duration with RP enabled, $n$ number of non-$\top$ integer operations; $n_i$ number of improved operation}
+  \caption*{\footnotesize Legend: $t_0$ duration with RP disabled; $t_1$ duration with RP enabled, $n$ number of non-$\top$ integer operations; $n_i$ number of improved operations}
 \end{table}
 
 \section{Summary}
 
-The results of measurement have shown the diversity in the nature of programs. While a few of them benefit highly from improvements provided by \texttt{MinMaxField} refinement information, the others were not able to utilize it.
+The results of measurement have shown the diversity in the nature of programs. While a~few of them benefit highly from improvements provided by \texttt{MinMaxField} refinement information, the others were not able to utilize it.
 
 This fact supports the \textit{modular approach} to design of abstract interpretation framework -- to gain further improvements in accuracy, we would have to implement another refinement information exchange to target different kind of properties.
 
@@ -1019,11 +1022,9 @@ This thesis has briefly described the basic principles of \textit{abstract inter
 
 The second part of this paper discusses design, limitations and implementation of \textit{reduced product approximation} to \textsc{Canal} project. The usage of the defined framework is shown on integration with existing abstract domains and the corresponding provides helpful guide for the future application of reduced product to other abstract values.
 
-The last chapter demonstrates the results of reduced product deployment on analysis of a set of real-life programs from \textsc{Gnu Coreutils} project.
+The implementation of reduced product in \textsc{Canal} has lowered the number of inaccurately approximated results of operations and thus reducing the number of potential \textit{false positive errors}. As a~result, the overall accuracy of analysis was improved.
 
-The implementation of reduced product in \textsc{Canal} has lowered the number of inaccurately approximated results of operations and thus \textit{improved the overall accuracy} of analysis.
-
-The future work may include optimized inter-domain communication framework, if the number of abstract domains \textsc{Canal} exceeds a certain volume. This would comprise improvements in the form of \textit{tree internal structure} or support for \textit{precondition refinements}. Also if encountered a specific pattern causing a loss of accuracy, new refinement messages may be designed and implemented to address this issue.
+The future work may include optimized inter-domain communication framework, if the number of abstract domains \textsc{Canal} exceeds a~certain volume. This would comprise improvements in the form of \textit{tree internal structure} or support for \textit{precondition refinements}. Also if encountered a~specific pattern causing a~loss of accuracy, new refinement messages may be designed and implemented to address this issue.
 
 \bibliographystyle{plain}
 \bibliography{reduced_product}
