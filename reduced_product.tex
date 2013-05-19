@@ -67,15 +67,14 @@
 \begin{ThesisThanks}
 I would like to express my thank to my supervisor Karel Klíč for introduction to the mysteries of abstract interpretation, leading \textsc{Canal} project and providing valuable feedback to this thesis.
 
-Also I would like to thank my family for support and my colleagues Tomáš Brukner and Matej Šuta for assistance with mastering C++ and factual comments.
+Also I would like to thank my family for support and my colleagues Tomáš Brukner and Matej Šuta for factual comments and assistance with mastering C++.
 \end{ThesisThanks}
 
 \begin{ThesisAbstract}
-Canal is a static analysis tool designed to analyse behaviour of application programs written in C. It is based on the theoretical framework of abstract interpretation, with focus on the scalability to large programs and proper handling of real-world source code.
 
-Reduced product of abstract domains is a mechanism enabling an incremental evolution of abstract interpreter by introducing simple abstract domains one by one, and supporting program-specific domains. The reduced product itself is an abstract domain, and its operations (transformers) use the transformers of underlying domains component-wise. Underlying domains can improve their precision by exchanging information.
+Abstract interpretation, which is an approach to static program analysis, is prone to \textit{false positive errors} caused by inaccurate approximation of program values. Reduced product of abstract domains provides a mechanism to \textit{improve the overall precision} of abstract analysis by introducing mutual refinements between abstract domains.
 
-The goal of this thesis was to design and develop a generic reduced product in the context of Canal. The reduced product provides means to exchange information between the underlying domains while keeping the domains themselves independent from each other. The impact of reduced product of integer intervals, bit field and set abstract domains on the analysis of programs is measured.
+This thesis provides theoretical framework, design and implementation of reduced product in context of \textsc{Canal} project -- an abstract analysis tool focused on the scalability to large programs and proper handling of real-world source code.
 \end{ThesisAbstract}
 
 \begin{ThesisKeyWords}
