@@ -40,6 +40,9 @@
 % Better tables
 \usepackage{booktabs}
 
+% Better caption
+\usepackage{caption}
+
 % ToC setup
 \usepackage[nottoc,numbib]{tocbibind}
 \setcounter{tocdepth}{3}
@@ -907,17 +910,34 @@ Implementation of \texttt{extract} and \texttt{refine} member functions can be f
 
 This chapter addresses measuring effectiveness and efficiency of reduced product implementation in \textsc{Canal} project.
 
-The set of test programs was chosen considering the focus of the project -- analysis of real-life source codes. Therefore the impact of implementation is measured on a set of utilities from \textsc{GNU Coreutils} project.
+The set of test programs was chosen regarding the focus of the project -- analysis of real-life source codes. Therefore, the impact of implementation is measured on a set of utilities from \textsc{GNU Coreutils} project.
 
 \section{Methodology}
 
-As \textsc{Canal} focuses on the actual analysis rather than on providing meta-information about the analysis, results achieved by \texttt{accuracy()} member function of \texttt{Domain} class might not be easily comparable between programs, thus interpretation of the results may not be clear.
+As \textsc{Canal} focuses on the actual analysis rather than on providing meta-information about the analysis, results achieved by \texttt{accuracy} member function of \texttt{Domain} class might not be easily comparable between programs. Due to this fact, the interpretation of results may not be clear.
 
-Therefore we have chosen to measure the final impact on the analysis results -- we measure the \textit{fraction of program instructions}, which analysis had been improved by reduced product, against the total number of program instructions. Also the \textit{duration of analysis execution} is measured, because the implementation increases overhead necessary to compute abstract operations.
+Therefore, we have decided to measure the final impact on the analysis results -- we measure the \textit{number of program operations}, which abstractions had been improved by reduced product, against the total number of program operations, which result is not $\top$ by default (e.g. external input). In both cases, we take only integer operations into the account. Also the \textit{duration of analysis execution} is measured, because the implementation increases overhead necessary to compute abstract operations.
 
 \section{Results}
 
-The results are arranged in a table, which contains name of program, total number of program instructions, number of improved instructions and durations analysis with and without reduced product enabled.
+The results are arranged in a table, which contains the name of program, total number of non-$\top$ operations, number of improved operations and durations analysis with and without reduced product enabled.
+
+\begin{table}
+  \centering
+  \begin{tabular}{l r r r}
+     & $min$ & $avg$ & $max$ \\
+     \midrule
+    \textbf{Improved operations} & $0\%$ & $7.54\%$ & $89\%$\\
+    \textbf{Slowdown} & $1.20\times$ & $2.14\times$ & $3.11\times$\\
+  \end{tabular}
+  \caption{Measurement summary}
+\end{table}
+
+As you can see, the performance varies considerably. It is due to differences in the nature of analysed programs. The greatest accuracy improvements were gained in the programs combining integer arithmetic with integer bitwise operations.
+
+It is because \textit{reduced product} allows to regain accuracy, which was lost when applying unsupported bitwise operations on the \textit{integer interval domain}, respectively unsupported arithmetic operations on the \textit{integer bitfield domain}.
+
+Conversely, the programs, which do not incorporate the combination of arithmetic and bitwise operations, have shown only insignificant or none improvement at all.
 
 \begin{table}[ht!]
   \scriptsize
@@ -980,10 +1000,17 @@ The results are arranged in a table, which contains name of program, total numbe
     average & 0.58 & 1.04 & 113.6 & 9.14 & 214.14 & 7.54 \\
 
   \end{tabular}
-  \caption{Impact of reduced product}
+  \caption{Impact of reduced product on \textsc{GNU Coreutils} analysis}
+  \caption*{\footnotesize Legend: $t_0$ duration with RP disabled; $t_1$ duration with RP enabled, $n$ number of non-$\top$ integer operations; $n_i$ number of improved operation}
 \end{table}
 
-As you can see, the performance...
+\section{Summary}
+
+The results of measurement have shown the diversity in the nature of programs. While a few of them benefit highly from improvements provided by \texttt{MinMaxField} refinement information, the others were not able to utilize it.
+
+This fact supports the \textit{modular approach} to design of abstract interpretation framework -- to gain further improvements in accuracy, we would have to implement another refinement information exchange to target different kind of properties.
+
+Also the measured slowdown has demonstrated the need for efficient implementation of \textit{extract} and \textit{refine} operations, because they are applied after any abstract operations -- thus very frequently.
 
 \chapter{Conclusion}
 
@@ -992,6 +1019,8 @@ This thesis has briefly described the basic principles of \textit{abstract inter
 The second part of this paper discusses design, limitations and implementation of \textit{reduced product approximation} to \textsc{Canal} project. The usage of the defined framework is shown on integration with existing abstract domains and the corresponding provides helpful guide for the future application of reduced product to other abstract values.
 
 The last chapter demonstrates the results of reduced product deployment on analysis of a set of real-life programs from \textsc{Gnu Coreutils} project.
+
+The implementation of reduced product in \textsc{Canal} has lowered the number of inaccurately approximated results of operations and thus \textit{improved the overall accuracy} of analysis.
 
 The future work may include optimized inter-domain communication framework, if the number of abstract domains \textsc{Canal} exceeds a certain volume. This would comprise improvements in the form of \textit{tree internal structure} or support for \textit{precondition refinements}. Also if encountered a specific pattern causing a loss of accuracy, new refinement messages may be designed and implemented to address this issue.
 
