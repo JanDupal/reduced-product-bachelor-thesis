@@ -1,7 +1,7 @@
 Reduced product of abstract domains bachelor thesis
 ===================================================
 
-Latest build: [reduced_product.pdf](http://jandupal.cz/reduced_product.pdf)
+Latest build: [reduced_product.pdf](http://jandupal.com/publications/reduced_product.pdf)
 
 ## Description
 
